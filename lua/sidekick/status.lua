@@ -9,14 +9,20 @@ local M = {}
 
 local status = {} ---@type table<integer, sidekick.lsp.Status>
 
+---@param res sidekick.lsp.Status
 ---@type lsp.Handler
 function M._handler(err, res, ctx)
   if err then
     return
   end
   status[ctx.client_id] = vim.deepcopy(res)
-  if res.status == "Error" then
-    vim.notify("Please use `:LspCopilotSignIn` to sign in to Copilot", vim.log.levels.ERROR)
+
+  if res.message and (res.kind == "Error" or res.kind == "Warning") then
+    local msg = "**Copilot:** " .. res.message
+    if msg:find("not signed") then
+      msg = msg .. "\nPlease use `:LspCopilotSignIn` to sign in."
+    end
+    require("sidekick.util").notify(msg, res.kind == "Error" and vim.log.levels.ERROR or vim.log.levels.WARN)
   end
 end
 
