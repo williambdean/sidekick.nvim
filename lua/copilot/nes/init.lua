@@ -1,0 +1,204 @@
+local Config = require("copilot.config")
+
+local M = {}
+
+---@alias copilot.Pos {[1]:integer, [2]:integer}
+
+---@class copilot.lsp.NesEdit
+---@field command lsp.Command
+---@field range lsp.Range
+---@field text string
+---@field textDocument {uri: string, version: integer}
+
+---@class copilot.NesEdit: copilot.lsp.NesEdit
+---@field buf integer
+---@field from copilot.Pos
+---@field to copilot.Pos
+---@field diff? copilot.Diff
+
+M._edits = {} ---@type copilot.NesEdit[]
+M._requests = {} ---@type table<number, number>
+
+function M.update()
+  M.cancel()
+  local buf = vim.api.nvim_get_current_buf()
+  local client = Config.get_client(buf)
+  if not client then
+    return
+  end
+
+  local params = vim.lsp.util.make_position_params(0, "utf-16")
+  ---@diagnostic disable-next-line: inject-field
+  params.textDocument.version = vim.lsp.util.buf_versions[buf]
+
+  ---@diagnostic disable-next-line: param-type-mismatch
+  local ok, request_id = client:request("textDocument/copilotInlineEdit", params, M._handler)
+  if ok and request_id then
+    M._requests[client.id] = request_id
+  end
+end
+
+---@param buf? number
+function M.get(buf)
+  ---@param edit copilot.NesEdit
+  return vim.tbl_filter(function(edit)
+    if not vim.api.nvim_buf_is_valid(edit.buf) then
+      return false
+    end
+    if edit.textDocument.version ~= vim.lsp.util.buf_versions[edit.buf] then
+      return false
+    end
+    return buf == nil or edit.buf == buf
+  end, M._edits)
+end
+
+function M.clear()
+  M.cancel()
+  M._edits = {}
+  require("copilot.nes.ui").hide()
+end
+
+--- Cancel pending requests
+function M.cancel()
+  for client_id, request_id in pairs(M._requests) do
+    M._requests[client_id] = nil
+    local client = vim.lsp.get_client_by_id(client_id)
+    if client then
+      client:cancel_request(request_id)
+    end
+  end
+end
+
+---@param res {edits: copilot.lsp.NesEdit[]}
+---@type lsp.Handler
+function M._handler(err, res, ctx)
+  M._requests[ctx.client_id] = nil
+
+  local client = vim.lsp.get_client_by_id(ctx.client_id)
+  if err or not client then
+    return
+  end
+
+  M._edits = {}
+
+  ---@param buf number
+  ---@param p lsp.Position
+  ---@return copilot.Pos
+  local function pos(buf, p)
+    local line = vim.api.nvim_buf_get_lines(buf, p.line, p.line + 1, false)[1] or ""
+    return { p.line, vim.str_byteindex(line, client.offset_encoding, p.character, false) }
+  end
+
+  for _, edit in ipairs(res.edits) do
+    local fname = vim.uri_to_fname(edit.textDocument.uri)
+    local buf = vim.fn.bufnr(fname, false)
+    if buf and vim.api.nvim_buf_is_valid(buf) then
+      ---@cast edit copilot.NesEdit
+      edit.buf = buf
+      edit.from, edit.to = pos(buf, edit.range.start), pos(buf, edit.range["end"])
+      table.insert(M._edits, edit)
+    end
+  end
+
+  if vim.api.nvim_buf_get_name(0):find("foo%.cs") then
+    M._edits = {
+      {
+        buf = vim.api.nvim_get_current_buf(),
+        command = {
+          arguments = { "a8b05178-7525-4b4d-90a4-31da980dfa90" },
+          command = "github.copilot.didAcceptCompletionItem",
+          title = "Accept inline edit",
+        },
+        from = { 15, 0 },
+        range = {
+          ["end"] = {
+            character = 88,
+            line = 17,
+          },
+          start = {
+            character = 0,
+            line = 15,
+          },
+        },
+        text = '    private async Task<Dictionary<string, double>> FetchData(string city, Unit unit)\n    {\n        var unitParam = unit == Unit.Celsius ? "c" : "f";\n        var response = await _client.GetStringAsync($"/api/weather?city={city}&unit={unitParam}");',
+        textDocument = {
+          uri = "file:///home/folke/projects/copilot.nvim/foo.cs",
+          version = vim.lsp.util.buf_versions[vim.api.nvim_get_current_buf()],
+        },
+        to = { 17, 88 },
+      },
+    }
+  end
+  require("copilot.nes.ui").update()
+end
+
+---@return boolean true if jumped
+function M.jump()
+  local buf = vim.api.nvim_get_current_buf()
+  local edit = M.get(buf)[1]
+
+  if not edit then
+    return false
+  end
+
+  local diff = require("copilot.nes.diff").diff(edit)
+  local hunk = vim.deepcopy(diff.hunks[1])
+  local pos = hunk.pos
+
+  if hunk.kind == "inline" and not hunk.delete then
+    pos[2] = math.max(0, pos[2] - 1)
+  end
+
+  -- check if we need to jump
+  pos[1] = pos[1] + 1
+  local cursor = vim.api.nvim_win_get_cursor(0)
+  if cursor[1] == pos[1] and cursor[2] == pos[2] then
+    return false
+  end
+
+  -- schedule jump
+  vim.schedule(function()
+    -- add to jump list
+    if Config.jump.jumplist then
+      vim.cmd("normal! m'")
+    end
+    vim.api.nvim_win_set_cursor(0, pos)
+  end)
+
+  return true
+end
+
+function M.have()
+  return #M.get(vim.api.nvim_get_current_buf()) > 0
+end
+
+---@return boolean true if text edit was applied
+function M.apply()
+  local buf = vim.api.nvim_get_current_buf()
+  local client = Config.get_client(buf)
+  local edits = M.get(buf)
+  if not client or #edits == 0 then
+    return false
+  end
+  ---@param edit copilot.NesEdit
+  local text_edits = vim.tbl_map(function(edit)
+    return {
+      range = edit.range,
+      newText = edit.text,
+    }
+  end, edits) --[[@as lsp.TextEdit[] ]]
+  vim.schedule(function()
+    vim.lsp.util.apply_text_edits(text_edits, buf, client.offset_encoding)
+    for _, edit in ipairs(edits) do
+      client:exec_cmd(edit.command, { bufnr = buf })
+    end
+    vim.api.nvim_exec_autocmds("User", {
+      pattern = "CopilotNesDone",
+      data = { client_id = client.id, buffer = buf },
+    })
+  end)
+  M.clear()
+  return true
+end
+
+return M
