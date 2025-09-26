@@ -5,6 +5,7 @@ local M = {}
 ---@class copilot.lsp.Status
 ---@field busy boolean
 ---@field kind "Normal" | "Error" | "Warning" | "Inactive"
+---@field message? string
 
 local status = {} ---@type table<integer, copilot.lsp.Status>
 
@@ -23,7 +24,7 @@ end
 ---@return copilot.lsp.Status?
 function M.get(buf)
   local client = Config.get_client(buf)
-  return client and status[client.id] or nil
+  return client and (status[client.id] or { busy = false, kind = "Normal" }) or nil
 end
 
 return M

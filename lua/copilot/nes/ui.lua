@@ -1,7 +1,6 @@
 local Config = require("copilot.config")
 local Nes = require("copilot.nes")
 local TS = require("copilot.treesitter")
-local Util = require("copilot.util")
 
 local M = {}
 
@@ -78,6 +77,7 @@ function M.render(edit)
             return vt
           end, add),
           hl_mode = "combine",
+          -- the below doesn't work well with virt_lines, so disable for now
           -- sign_text = Config.signs.add,
           -- sign_hl_group = "CopilotSignAdd",
         })

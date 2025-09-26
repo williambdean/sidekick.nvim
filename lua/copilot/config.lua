@@ -16,13 +16,20 @@ local defaults = {
   },
   nes = {
     debounce = 100,
-    -- Events that trigger copilot next edit suggestions
-    -- Set to the empty list if you want to manually trigger next edits
-    -- Only trigger NES updates:
-    -- * when leaving insert mode
-    -- * when text is changed (in normal mode)
-    -- * when accepting a next edit suggestion
-    events = { "InsertLeave", "TextChanged", "User CopilotNesDone" },
+    trigger = {
+      -- Events that trigger copilot next edit suggestions
+      -- Set to the empty list if you want to manually trigger next edits
+      -- Only trigger NES updates:
+      -- * when leaving insert mode
+      -- * when text is changed (in normal mode)
+      -- * when accepting a next edit suggestion
+      events = { "InsertLeave", "TextChanged", "User CopilotNesDone" },
+    },
+    clear = {
+      -- events that clear the current next edit suggestion
+      events = { "TextChangedI", "BufWritePre" },
+      esc = true, -- clear next edit suggestions when pressing <Esc>
+    },
     ---@class copilot.diff.Opts: vim.text.diff.Opts
     ---@field inline? boolean Enable inline diffs
     diff = {
@@ -72,14 +79,29 @@ function M.setup(opts)
       callback = M.set_hl,
     })
 
-    local update = require("copilot.util").debounce(require("copilot.nes").update, M.nes.debounce)
-    for _, event in ipairs(config.nes.events) do
-      local name, pattern = event:match("^(%S+)%s*(.*)$") --[[@as string, string]]
-      vim.api.nvim_create_autocmd(name, {
-        pattern = pattern ~= "" and pattern or nil,
-        group = group,
-        callback = update,
-      })
+    ---@param events string[]
+    ---@param fn fun()
+    local function on(events, fn)
+      for _, event in ipairs(events) do
+        local name, pattern = event:match("^(%S+)%s*(.*)$") --[[@as string, string]]
+        vim.api.nvim_create_autocmd(name, {
+          pattern = pattern ~= "" and pattern or nil,
+          group = group,
+          callback = fn,
+        })
+      end
+    end
+
+    on(M.nes.clear.events, require("copilot").clear)
+    on(M.nes.trigger.events, require("copilot.util").debounce(require("copilot.nes").update, M.nes.debounce))
+
+    if M.nes.clear.esc then
+      local ESC = vim.keycode("<Esc>")
+      vim.on_key(function(_, typed)
+        if typed == ESC then
+          require("copilot").clear()
+        end
+      end, nil)
     end
   end)
 end
