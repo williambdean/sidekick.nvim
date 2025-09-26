@@ -27,7 +27,7 @@ function M.update()
     return
   end
 
-  local params = vim.lsp.util.make_position_params(0, "utf-16")
+  local params = vim.lsp.util.make_position_params(0, client.offset_encoding)
   ---@diagnostic disable-next-line: inject-field
   params.textDocument.version = vim.lsp.util.buf_versions[buf]
 
@@ -89,7 +89,7 @@ function M._handler(err, res, ctx)
     return { p.line, vim.str_byteindex(line, client.offset_encoding, p.character, false) }
   end
 
-  for _, edit in ipairs(res.edits) do
+  for _, edit in ipairs(res.edits or {}) do
     local fname = vim.uri_to_fname(edit.textDocument.uri)
     local buf = vim.fn.bufnr(fname, false)
     if buf and vim.api.nvim_buf_is_valid(buf) then
