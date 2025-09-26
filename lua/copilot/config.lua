@@ -9,6 +9,7 @@ local defaults = {
     jumplist = true, -- add an entry to the jumplist
   },
   signs = {
+    enabled = true, -- enable signs by default
     add = " ",
     change = " ",
     delete = " ",

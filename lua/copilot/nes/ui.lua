@@ -31,15 +31,19 @@ function M.render(edit)
     hl_eol = true,
   })
 
+  local signs = Config.signs.enabled
+
   for _, hunk in ipairs(diff.hunks) do
     vim.b[edit.buf].copilot_nes = true
     if hunk.kind == "inline" then
       -- Inline Change
       local row = hunk.pos[1]
-      vim.api.nvim_buf_set_extmark(edit.buf, Config.ns, row, 0, {
-        sign_text = Config.signs.change,
-        sign_hl_group = "CopilotSignChange",
-      })
+      if signs then
+        vim.api.nvim_buf_set_extmark(edit.buf, Config.ns, row, 0, {
+          sign_text = Config.signs.change,
+          sign_hl_group = "CopilotSignChange",
+        })
+      end
       if hunk.delete then
         vim.api.nvim_buf_set_extmark(edit.buf, Config.ns, hunk.delete.from[1], hunk.delete.from[2], {
           end_col = hunk.delete.to[2],
@@ -60,8 +64,8 @@ function M.render(edit)
           end_line = hunk.delete.to[1],
           end_col = hunk.delete.to[2],
           hl_group = "CopilotDiffDelete",
-          sign_text = Config.signs.delete,
-          sign_hl_group = "CopilotSignDelete",
+          sign_text = signs and Config.signs.delete or nil,
+          sign_hl_group = signs and "CopilotSignDelete" or nil,
         })
       end
       if hunk.add then
