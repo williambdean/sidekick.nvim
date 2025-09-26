@@ -1,13 +1,13 @@
 local M = {}
 
----@alias copilot.TSHighlight string | { [1]:string, [2]:string }
----@alias copilot.TSTextChunk { [1]:string, [2]?:copilot.TSHighlight }
----@alias copilot.TSVirtualText copilot.TSTextChunk[]
----@alias copilot.TSVirtualLines copilot.TSVirtualText[]
+---@alias sidekick.TSHighlight string | { [1]:string, [2]:string }
+---@alias sidekick.TSTextChunk { [1]:string, [2]?:sidekick.TSHighlight }
+---@alias sidekick.TSVirtualText sidekick.TSTextChunk[]
+---@alias sidekick.TSVirtualLines sidekick.TSVirtualText[]
 
 ---@param lines string[]
 ---@param opts {ft:string, bg?:string, ws?:string}
----@return copilot.TSVirtualLines
+---@return sidekick.TSVirtualLines
 function M.get_virtual_lines(lines, opts)
   local lang = vim.treesitter.language.get_lang(opts.ft)
   local source = table.concat(lines, "\n")
@@ -62,7 +62,7 @@ function M.get_virtual_lines(lines, opts)
     end
   end)
 
-  local ret = {} ---@type copilot.TSVirtualLines
+  local ret = {} ---@type sidekick.TSVirtualLines
   for i = 1, #lines do
     local line = lines[i]
     local from = 1
@@ -102,11 +102,11 @@ function M.get_virtual_lines(lines, opts)
   return ret
 end
 
----@param virtual_text copilot.TSVirtualText
+---@param virtual_text sidekick.TSVirtualText
 ---@param from number 1-based, inclusive
 ---@param to number 1-based, inclusive
 function M.slice(virtual_text, from, to)
-  local ret = {} ---@type copilot.TSVirtualText
+  local ret = {} ---@type sidekick.TSVirtualText
   local chunk_from = 1
   local c = 0
   for _, chunk in ipairs(virtual_text) do

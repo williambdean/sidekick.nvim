@@ -1,13 +1,13 @@
-local Config = require("copilot.config")
+local Config = require("sidekick.config")
 
 local M = {}
 
----@class copilot.lsp.Status
+---@class sidekick.lsp.Status
 ---@field busy boolean
 ---@field kind "Normal" | "Error" | "Warning" | "Inactive"
 ---@field message? string
 
-local status = {} ---@type table<integer, copilot.lsp.Status>
+local status = {} ---@type table<integer, sidekick.lsp.Status>
 
 ---@type lsp.Handler
 function M._handler(err, res, ctx)
@@ -21,7 +21,7 @@ function M._handler(err, res, ctx)
 end
 
 ---@param buf? integer
----@return copilot.lsp.Status?
+---@return sidekick.lsp.Status?
 function M.get(buf)
   local client = Config.get_client(buf)
   return client and (status[client.id] or { busy = false, kind = "Normal" }) or nil

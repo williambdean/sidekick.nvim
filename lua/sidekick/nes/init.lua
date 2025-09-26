@@ -1,22 +1,22 @@
-local Config = require("copilot.config")
+local Config = require("sidekick.config")
 
 local M = {}
 
----@alias copilot.Pos {[1]:integer, [2]:integer}
+---@alias sidekick.Pos {[1]:integer, [2]:integer}
 
----@class copilot.lsp.NesEdit
+---@class sidekick.lsp.NesEdit
 ---@field command lsp.Command
 ---@field range lsp.Range
 ---@field text string
 ---@field textDocument {uri: string, version: integer}
 
----@class copilot.NesEdit: copilot.lsp.NesEdit
+---@class sidekick.NesEdit: sidekick.lsp.NesEdit
 ---@field buf integer
----@field from copilot.Pos
----@field to copilot.Pos
----@field diff? copilot.Diff
+---@field from sidekick.Pos
+---@field to sidekick.Pos
+---@field diff? sidekick.Diff
 
-M._edits = {} ---@type copilot.NesEdit[]
+M._edits = {} ---@type sidekick.NesEdit[]
 M._requests = {} ---@type table<number, number>
 
 function M.update()
@@ -40,7 +40,7 @@ end
 
 ---@param buf? number
 function M.get(buf)
-  ---@param edit copilot.NesEdit
+  ---@param edit sidekick.NesEdit
   return vim.tbl_filter(function(edit)
     if not vim.api.nvim_buf_is_valid(edit.buf) then
       return false
@@ -55,7 +55,7 @@ end
 function M.clear()
   M.cancel()
   M._edits = {}
-  require("copilot.nes.ui").hide()
+  require("sidekick.nes.ui").hide()
 end
 
 --- Cancel pending requests
@@ -69,7 +69,7 @@ function M.cancel()
   end
 end
 
----@param res {edits: copilot.lsp.NesEdit[]}
+---@param res {edits: sidekick.lsp.NesEdit[]}
 ---@type lsp.Handler
 function M._handler(err, res, ctx)
   M._requests[ctx.client_id] = nil
@@ -81,9 +81,11 @@ function M._handler(err, res, ctx)
 
   M._edits = {}
 
+  res = res or { edits = {} }
+
   ---@param buf number
   ---@param p lsp.Position
-  ---@return copilot.Pos
+  ---@return sidekick.Pos
   local function pos(buf, p)
     local line = vim.api.nvim_buf_get_lines(buf, p.line, p.line + 1, false)[1] or ""
     return { p.line, vim.str_byteindex(line, client.offset_encoding, p.character, false) }
@@ -93,7 +95,7 @@ function M._handler(err, res, ctx)
     local fname = vim.uri_to_fname(edit.textDocument.uri)
     local buf = vim.fn.bufnr(fname, false)
     if buf and vim.api.nvim_buf_is_valid(buf) then
-      ---@cast edit copilot.NesEdit
+      ---@cast edit sidekick.NesEdit
       edit.buf = buf
       edit.from, edit.to = pos(buf, edit.range.start), pos(buf, edit.range["end"])
       table.insert(M._edits, edit)
@@ -129,7 +131,7 @@ function M._handler(err, res, ctx)
       },
     }
   end
-  require("copilot.nes.ui").update()
+  require("sidekick.nes.ui").update()
 end
 
 ---@return boolean true if jumped
@@ -141,7 +143,7 @@ function M.jump()
     return false
   end
 
-  local diff = require("copilot.nes.diff").diff(edit)
+  local diff = require("sidekick.nes.diff").diff(edit)
   local hunk = vim.deepcopy(diff.hunks[1])
   local pos = hunk.pos
 
@@ -152,7 +154,7 @@ function M.jump()
   return M._jump(pos)
 end
 
----@param pos copilot.Pos
+---@param pos sidekick.Pos
 function M._jump(pos)
   pos = vim.deepcopy(pos)
 
@@ -187,7 +189,7 @@ function M.apply()
   if not client or #edits == 0 then
     return false
   end
-  ---@param edit copilot.NesEdit
+  ---@param edit sidekick.NesEdit
   local text_edits = vim.tbl_map(function(edit)
     return {
       range = edit.range,
@@ -196,7 +198,7 @@ function M.apply()
   end, edits) --[[@as lsp.TextEdit[] ]]
   vim.schedule(function()
     local last = edits[#edits]
-    local diff = require("copilot.nes.diff").diff(last)
+    local diff = require("sidekick.nes.diff").diff(last)
 
     vim.lsp.util.apply_text_edits(text_edits, buf, client.offset_encoding)
     for _, edit in ipairs(edits) do
@@ -212,7 +214,7 @@ function M.apply()
     M._jump(pos)
 
     vim.api.nvim_exec_autocmds("User", {
-      pattern = "CopilotNesDone",
+      pattern = "SidekickNesDone",
       data = { client_id = client.id, buffer = buf },
     })
   end)

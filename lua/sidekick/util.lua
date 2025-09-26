@@ -4,7 +4,7 @@ local M = {}
 ---@param level? vim.log.levels
 function M.notify(msg, level)
   vim.schedule(function()
-    vim.notify(msg, level or vim.log.levels.INFO, { title = "Copilot" })
+    vim.notify(msg, level or vim.log.levels.INFO, { title = "Sidekick" })
   end)
 end
 

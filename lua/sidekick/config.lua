@@ -1,9 +1,9 @@
----@class copilot.config: copilot.Config
+---@class sidekick.config: sidekick.Config
 local M = {}
 
-M.ns = vim.api.nvim_create_namespace("copilot.ui")
+M.ns = vim.api.nvim_create_namespace("sidekick.ui")
 
----@class copilot.Config
+---@class sidekick.Config
 local defaults = {
   jump = {
     jumplist = true, -- add an entry to the jumplist
@@ -17,15 +17,15 @@ local defaults = {
   nes = {
     debounce = 100,
     trigger = {
-      -- events that trigger copilot next edit suggestions
-      events = { "InsertLeave", "TextChanged", "User CopilotNesDone" },
+      -- events that trigger sidekick next edit suggestions
+      events = { "InsertLeave", "TextChanged", "User SidekickNesDone" },
     },
     clear = {
       -- events that clear the current next edit suggestion
       events = { "TextChangedI", "BufWritePre", "InsertEnter" },
       esc = true, -- clear next edit suggestions when pressing <Esc>
     },
-    ---@class copilot.diff.Opts: vim.text.diff.Opts
+    ---@class sidekick.diff.Opts: vim.text.diff.Opts
     ---@field inline? boolean Enable inline diffs
     diff = {
       inline = true,
@@ -35,13 +35,13 @@ local defaults = {
   },
 }
 
-local config = vim.deepcopy(defaults) --[[@as copilot.Config]]
+local config = vim.deepcopy(defaults) --[[@as sidekick.Config]]
 
----@param opts? copilot.Config
+---@param opts? sidekick.Config
 function M.setup(opts)
   config = vim.tbl_deep_extend("force", {}, defaults, opts or {})
 
-  local group = vim.api.nvim_create_augroup("copilot", { clear = true })
+  local group = vim.api.nvim_create_augroup("sidekick", { clear = true })
 
   -- Copilot requires the custom didFocus notification
   vim.api.nvim_create_autocmd("BufEnter", {
@@ -62,7 +62,7 @@ function M.setup(opts)
   vim.lsp.config("copilot", {
     handlers = {
       didChangeStatus = function(...)
-        return require("copilot.status")._handler(...)
+        return require("sidekick.status")._handler(...)
       end,
     },
   })
@@ -87,14 +87,14 @@ function M.setup(opts)
       end
     end
 
-    on(M.nes.clear.events, require("copilot").clear)
-    on(M.nes.trigger.events, require("copilot.util").debounce(require("copilot.nes").update, M.nes.debounce))
+    on(M.nes.clear.events, require("sidekick").clear)
+    on(M.nes.trigger.events, require("sidekick.util").debounce(require("sidekick.nes").update, M.nes.debounce))
 
     if M.nes.clear.esc then
       local ESC = vim.keycode("<Esc>")
       vim.on_key(function(_, typed)
         if typed == ESC then
-          require("copilot").clear()
+          require("sidekick").clear()
         end
       end, nil)
     end
@@ -116,7 +116,7 @@ function M.set_hl()
     SignDelete = "DiagnosticSignError",
   }
   for from, to in pairs(links) do
-    vim.api.nvim_set_hl(0, "Copilot" .. from, { link = to, default = true })
+    vim.api.nvim_set_hl(0, "Sidekick" .. from, { link = to, default = true })
   end
 end
 
