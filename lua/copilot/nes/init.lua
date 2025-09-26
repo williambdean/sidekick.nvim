@@ -149,6 +149,13 @@ function M.jump()
     pos[2] = math.max(0, pos[2] - 1)
   end
 
+  return M._jump(pos)
+end
+
+---@param pos copilot.Pos
+function M._jump(pos)
+  pos = vim.deepcopy(pos)
+
   -- check if we need to jump
   pos[1] = pos[1] + 1
   local cursor = vim.api.nvim_win_get_cursor(0)
@@ -188,10 +195,22 @@ function M.apply()
     }
   end, edits) --[[@as lsp.TextEdit[] ]]
   vim.schedule(function()
+    local last = edits[#edits]
+    local diff = require("copilot.nes.diff").diff(last)
+
     vim.lsp.util.apply_text_edits(text_edits, buf, client.offset_encoding)
     for _, edit in ipairs(edits) do
       client:exec_cmd(edit.command, { bufnr = buf })
     end
+
+    -- jump to end of last edit
+    local pos = vim.deepcopy(last.from)
+    if #diff.to.lines >= 1 then
+      pos[1] = pos[1] + (#diff.to.lines - 1)
+      pos[2] = pos[2] + #diff.to.text
+    end
+    M._jump(pos)
+
     vim.api.nvim_exec_autocmds("User", {
       pattern = "CopilotNesDone",
       data = { client_id = client.id, buffer = buf },
