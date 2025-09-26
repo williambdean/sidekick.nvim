@@ -17,17 +17,12 @@ local defaults = {
   nes = {
     debounce = 100,
     trigger = {
-      -- Events that trigger copilot next edit suggestions
-      -- Set to the empty list if you want to manually trigger next edits
-      -- Only trigger NES updates:
-      -- * when leaving insert mode
-      -- * when text is changed (in normal mode)
-      -- * when accepting a next edit suggestion
+      -- events that trigger copilot next edit suggestions
       events = { "InsertLeave", "TextChanged", "User CopilotNesDone" },
     },
     clear = {
       -- events that clear the current next edit suggestion
-      events = { "TextChangedI", "BufWritePre" },
+      events = { "TextChangedI", "BufWritePre", "InsertEnter" },
       esc = true, -- clear next edit suggestions when pressing <Esc>
     },
     ---@class copilot.diff.Opts: vim.text.diff.Opts
