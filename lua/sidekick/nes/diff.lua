@@ -18,7 +18,7 @@ local M = {}
 ---@class sidekick.DiffAdd
 ---@field pos sidekick.Pos (0-0)-indexed pos of the add
 ---@field from sidekick.Pos (1,1)-indexed start in new text
----@field to sidekick.Pos (1,1)-indexed start in new text
+---@field to sidekick.Pos (1,1)-indexed end in new text
 
 ---@class sidekick.DiffHunk
 ---@field kind "inline" | "block"
@@ -94,14 +94,14 @@ function M.diff(edit)
       if ac > 0 then
         h.delete = {
           from = { row, 0 },
-          to = { row + ac - 1, #old_lines[ai] },
+          to = { row + ac - 1, #old_lines[ai + ac - 1] },
         }
       end
       if bc > 0 then
         h.add = {
-          pos = { row + ac, 0 },
-          from = { bi, 0 },
-          to = { bi + bc - 1, 0 },
+          pos = { row + (ac > 0 and ac - 1 or 0), 0 },
+          from = { bi, 1 },
+          to = { bi + bc - 1, #new_lines[bi + bc - 1] },
         }
       end
     end
