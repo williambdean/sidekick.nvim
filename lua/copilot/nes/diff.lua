@@ -1,3 +1,5 @@
+local Config = require("copilot.config")
+
 local M = {}
 
 ---@alias copilot.DiffText {text: string, lines: string[]}
@@ -48,16 +50,14 @@ function M.diff(edit)
     to = { text = new_text, lines = new_lines },
   }
 
-  local hunks = vim.text.diff(old_text, new_text, {
-    result_type = "indices",
-    algorithm = "patience",
-    linematch = true,
-  }) --[[@as (integer[][])]]
+  local diff_opts = vim.deepcopy(Config.nes.diff)
+  diff_opts.inline = nil
+  local hunks = vim.text.diff(old_text, new_text, diff_opts) --[[@as (integer[][])]]
 
   for _, hunk in ipairs(hunks) do
     vim.b[edit.buf].copilot_nes = true
     local ai, ac, bi, bc = unpack(hunk)
-    if ac == 1 and bc == 1 then
+    if Config.nes.diff.inline and ac == 1 and bc == 1 then
       -- Inline Change
       local row = edit.from[1] + ai - 1
 

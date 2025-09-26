@@ -22,6 +22,14 @@ local defaults = {
     -- * when text is changed (in normal mode)
     -- * when accepting a next edit suggestion
     events = { "InsertLeave", "TextChanged", "User CopilotNesDone" },
+    ---@class copilot.diff.Opts: vim.text.diff.Opts
+    ---@field inline? boolean Enable inline diffs
+    diff = {
+      inline = true,
+      result_type = "indices",
+      algorithm = "patience",
+      linematch = true,
+    },
   },
 }
 
