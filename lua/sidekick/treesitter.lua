@@ -103,12 +103,19 @@ function M.get_virtual_lines(lines, opts)
 end
 
 ---@param virtual_text sidekick.TSVirtualText
----@param from number 1-based, inclusive
----@param to number 1-based, inclusive
+---@param from? number 1-based, inclusive
+---@param to? number 1-based, inclusive
 function M.slice(virtual_text, from, to)
   local ret = {} ---@type sidekick.TSVirtualText
   local chunk_from = 1
   local c = 0
+  from = from or 1
+  if to == nil then
+    to = 0
+    for _, chunk in ipairs(virtual_text) do
+      to = to + #chunk[1]
+    end
+  end
   for _, chunk in ipairs(virtual_text) do
     local text, hl = chunk[1], chunk[2]
     local chunk_to = chunk_from + #text - 1
