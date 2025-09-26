@@ -27,15 +27,13 @@ local defaults = {
     ---@field inline? boolean Enable inline diffs
     diff = {
       inline = true,
-      result_type = "indices",
       algorithm = "patience",
       linematch = true,
     },
   },
 }
 
----@type copilot.Config
-local config = vim.deepcopy(defaults)
+local config = vim.deepcopy(defaults) --[[@as copilot.Config]]
 
 ---@param opts? copilot.Config
 function M.setup(opts)

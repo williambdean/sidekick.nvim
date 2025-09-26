@@ -52,6 +52,7 @@ function M.diff(edit)
 
   local diff_opts = vim.deepcopy(Config.nes.diff)
   diff_opts.inline = nil
+  diff_opts.result_type = "indices"
   local hunks = vim.text.diff(old_text, new_text, diff_opts) --[[@as (integer[][])]]
 
   for _, hunk in ipairs(hunks) do
