@@ -125,12 +125,10 @@ Default settings ~
           events = { "TextChangedI", "BufWritePre", "InsertEnter" },
           esc = true, -- clear next edit suggestions when pressing <Esc>
         },
-        ---@class sidekick.diff.Opts: vim.text.diff.Opts
-        ---@field inline? boolean Enable inline diffs
+        ---@class sidekick.diff.Opts
+        ---@field inline? "words"|"chars"|false Enable inline diffs
         diff = {
-          inline = true,
-          algorithm = "patience",
-          linematch = true,
+          inline = "words",
         },
       },
     }
