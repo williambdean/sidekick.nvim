@@ -6,7 +6,7 @@ local M = {}
 ---@alias sidekick.TSVirtualLines sidekick.TSVirtualText[]
 
 ---@param lines string[]
----@param opts {ft:string, bg?:string, ws?:string}
+---@param opts {ft:string, bg?:string}
 ---@return sidekick.TSVirtualLines
 function M.get_virtual_lines(lines, opts)
   local lang = vim.treesitter.language.get_lang(opts.ft)
@@ -74,13 +74,6 @@ function M.get_virtual_lines(lines, opts)
         ret[i] = ret[i] or {}
         local text = line:sub(from, to)
         local hl = opts.bg and { hl_group or "Normal", opts.bg } or hl_group
-        if from == 1 and opts.ws then
-          local ws = text:match("^%s+")
-          if ws then
-            table.insert(ret[i], { ws, opts.ws })
-            text = text:sub(#ws + 1)
-          end
-        end
         if #text > 0 then
           table.insert(ret[i], { text, hl })
         end
@@ -98,36 +91,37 @@ function M.get_virtual_lines(lines, opts)
     end
     add(#line)
   end
-
   return ret
 end
 
----@param virtual_text sidekick.TSVirtualText
----@param from? number 1-based, inclusive
----@param to? number 1-based, inclusive
-function M.slice(virtual_text, from, to)
-  local ret = {} ---@type sidekick.TSVirtualText
-  local chunk_from = 1
-  local c = 0
-  from = from or 1
-  if to == nil then
-    to = 0
-    for _, chunk in ipairs(virtual_text) do
-      to = to + #chunk[1]
+--- Highlight leading/trailing whitespace and EOL in virtual lines
+---@param virtual_lines sidekick.TSVirtualLines
+---@param opts? {leading?:string, trailing?:string}
+function M.highlight_ws(virtual_lines, opts)
+  opts = opts or {}
+  for _, vt in ipairs(virtual_lines) do
+    if opts.trailing then
+      table.insert(vt, { string.rep(" ", vim.o.columns), opts.trailing })
+    end
+    if opts.leading then
+      local chunk = vt[1]
+      if chunk then
+        local text = chunk[1]
+        local ws = text:match("^%s+")
+        if ws then
+          local chunk_hl = chunk[2]
+          chunk[1] = ws
+          chunk[2] = opts.leading
+          if #ws < #text then
+            table.insert(vt, 2, { text:sub(#ws + 1), chunk_hl })
+          end
+        else
+          chunk[2] = nil
+        end
+      end
     end
   end
-  for _, chunk in ipairs(virtual_text) do
-    local text, hl = chunk[1], chunk[2]
-    local chunk_to = chunk_from + #text - 1
-    if chunk_to >= from and chunk_from <= to then
-      text = text:sub(math.max(1, from - chunk_from + 1), math.min(#text, to - chunk_from + 1))
-      c = c + #text
-      table.insert(ret, { text, hl })
-    end
-    chunk_from = chunk_to + 1
-  end
-  assert(c == to - from + 1, "sliced length mismatch")
-  return ret
+  return virtual_lines
 end
 
 return M
