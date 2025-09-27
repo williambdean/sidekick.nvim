@@ -8,6 +8,8 @@ apply without leaving the buffer.
 > **Status**: Early preview. The API is still settling; expect breaking changes while
 > Copilot's inline edit endpoints evolve.
 
+<img width="1474" height="971" alt="image" src="https://github.com/user-attachments/assets/6f4ff1ad-aa47-4219-8a01-69bdf29e0d8a" />
+
 ## ✨ Features
 
 - 🪄 **Live inline edits** – automatically request Copilot NES suggestions on cursor
