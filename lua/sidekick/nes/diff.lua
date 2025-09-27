@@ -62,7 +62,8 @@ end
 function M._diff(a, b, opts)
   local txt_a = table.concat(a, "\n")
   local txt_b = table.concat(b, "\n")
-  return vim.text.diff(txt_a, txt_b, opts) --[[@as (integer[][])]]
+  ---@diagnostic disable-next-line: deprecated
+  return (vim.text.diff or vim.diff)(txt_a, txt_b, opts) --[[@as (integer[][])]]
 end
 
 ---@param edit sidekick.NesEdit
