@@ -55,7 +55,7 @@ function M.get_virtual_lines(lines, opts)
           local hl_group = "@" .. name .. "." .. lang
           index[row] = index[row] or {}
           for i = col + 1, end_col do
-            index[row][i] = index[row][i] or hl_group
+            index[row][i] = hl_group
           end
         end
       end

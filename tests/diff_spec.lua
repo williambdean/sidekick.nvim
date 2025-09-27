@@ -1,45 +1,59 @@
 ---@module 'luassert'
 
-local line_diff = require("sidekick.nes.diff").line_diff
+local tokenize = require("sidekick.nes.diff").tokenize
 
-describe("line_diff", function()
+describe("tokenize", function()
+  -- should split a string in alpha / non-alpha parts
   local cases = {
+    { "abcd", { "abcd" } },
+    { "abcd ", { "abcd", " " } },
+    { " ", { " " } },
+    { "abcd.", { "abcd", "." } },
+    { "abcd.?", { "abcd", ".", "?" } },
+    { "abc123", { "abc123" } },
+    { "123abc", { "123abc" } },
+    { "abc 123", { "abc", " ", "123" } },
+    { "abc\t123", { "abc", "\t", "123" } },
+    { "abc\n123", { "abc", "\n", "123" } },
+    { "abc.def", { "abc", ".", "def" } },
+    { "abc.def.ghi", { "abc", ".", "def", ".", "ghi" } },
+    { "abc_def", { "abc_def" } },
+    { "abc-def", { "abc", "-", "def" } },
+    { "abc+def", { "abc", "+", "def" } },
+    { "abc*def", { "abc", "*", "def" } },
+    { "abc/def", { "abc", "/", "def" } },
+    { "abc=def", { "abc", "=", "def" } },
     {
-      name = "returns bounds past the end when lines match",
-      a = "hello",
-      b = "hello",
-      expected = { 6, 5, 5 },
-    },
-    {
-      name = "detects a single character replacement",
-      a = "abcde",
-      b = "abXde",
-      expected = { 3, 3, 3 },
-    },
-    {
-      name = "captures inserted span in new line",
-      a = "abc",
-      b = "abXc",
-      expected = { 3, 2, 3 },
-    },
-    {
-      name = "captures deleted span from original line",
-      a = "abXc",
-      b = "abc",
-      expected = { 3, 3, 2 },
-    },
-    {
-      name = "starts diff at first character when prefixes differ",
-      a = "xyz",
-      b = "abc",
-      expected = { 1, 3, 3 },
+      'local diff = require("sidekick.nes.diff").diff(edit)',
+      {
+        "local",
+        " ",
+        "diff",
+        " ",
+        "=",
+        " ",
+        "require",
+        "(",
+        '"',
+        "sidekick",
+        ".",
+        "nes",
+        ".",
+        "diff",
+        '"',
+        ")",
+        ".",
+        "diff",
+        "(",
+        "edit",
+        ")",
+      },
     },
   }
 
   for _, case in ipairs(cases) do
-    it(case.name, function()
-      local from, to_a, to_b = line_diff(case.a, case.b)
-      assert.are.same(case.expected, { from, to_a, to_b })
+    it(case[1] .. " => " .. vim.inspect(case[2]), function()
+      assert.are.same(case[2], tokenize(case[1]))
     end)
   end
 end)

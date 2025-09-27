@@ -122,9 +122,9 @@ function M._handler(err, res, ctx)
             line = 15,
           },
         },
-        text = '    private async Task<Dictionary<string, double>> FetchData(string city, Unit unit)\n    {\n        var unitParam = unit == Unit.Celsius ? "c" : "f";\n        var response = await _client.GetStringAsync($"/api/weather?city={city}&unit={unitParam}");',
+        text = '    private Task<Dictionary<string, double, int>> FetchData(string city, Unit unit)\n    {\n        var unitParam = unit == Unit.Celsius ? "c" : "f";\n        var response = await _client.GetStringAsync($"/api/weather?city={city}&unit={unitParam}");',
         textDocument = {
-          uri = "file:///home/folke/projects/copilot.nvim/foo.cs",
+          uri = "file:///home/folke/projects/sidekick.nvim/foo.cs",
           version = vim.lsp.util.buf_versions[vim.api.nvim_get_current_buf()],
         },
         to = { 17, 88 },
@@ -146,10 +146,6 @@ function M.jump()
   local diff = require("sidekick.nes.diff").diff(edit)
   local hunk = vim.deepcopy(diff.hunks[1])
   local pos = hunk.pos
-
-  if hunk.kind == "inline" and not hunk.delete then
-    pos[2] = math.max(0, pos[2] - 1)
-  end
 
   return M._jump(pos)
 end
