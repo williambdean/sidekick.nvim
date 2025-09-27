@@ -5,26 +5,26 @@ local Util = require("sidekick.util")
 local M = {}
 
 local INLINE_MAX_LINES = 3
-local INLINE_MAX_INSERT_RATIO = 0.4
+local INLINE_MAX_INSERT_RATIO = 0.5
 
 ---@type vim.text.diff.Opts
 local DIFF_OPTS = {
   algorithm = "patience",
-  result_type = "indices",
-  indent_heuristic = true,
-  linematch = 10,
   ctxlen = 0,
+  indent_heuristic = true,
   interhunkctxlen = 0,
+  linematch = 10,
+  result_type = "indices",
 }
 
 ---@type vim.text.diff.Opts
 local DIFF_INLINE_OPTS = {
   algorithm = "minimal",
-  result_type = "indices",
-  linematch = 0,
   ctxlen = 0,
-  interhunkctxlen = 4,
   indent_heuristic = false,
+  interhunkctxlen = 4,
+  linematch = 0,
+  result_type = "indices",
 }
 
 ---@alias sidekick.DiffText {text: string, lines: string[], virt_lines: sidekick.TSVirtualLines}
@@ -153,17 +153,15 @@ function M.diff_lines(diff)
   end
 end
 
----@param diff sidekick.Diff
 ---@param line_idx integer
 ---@param vl_all sidekick.TSVirtualLines
-function M._index(diff, line_idx, vl_all)
+function M._index(line_idx, vl_all)
   local toks = {} ---@type string[]
   local vl = {} ---@type sidekick.TSVirtualText
   local index = {} ---@type table<integer, {col: integer, end_col: integer}>
   index[0] = { col = 0, end_col = 0 } -- needed for insertions before the first token
   for _, t in ipairs(vl_all[line_idx] or {}) do
-    local parts = Util.split_words(t[1])
-    parts = Util.split_chars(t[1])
+    local parts = Config.nes.diff.inline == "words" and Util.split_words(t[1]) or Util.split_chars(t[1])
     for _, p in ipairs(parts) do
       local idx = #toks + 1
       toks[idx] = p
@@ -186,8 +184,8 @@ end
 ---@param to_idx integer
 ---@return sidekick.diff.Hunk[]?
 function M.diff_inline(diff, from_idx, to_idx)
-  local a_toks, a_index = M._index(diff, from_idx, diff.from.virt_lines)
-  local b_toks, b_index, b_vl = M._index(diff, to_idx, diff.to.virt_lines)
+  local a_toks, a_index = M._index(from_idx, diff.from.virt_lines)
+  local b_toks, b_index, b_vl = M._index(to_idx, diff.to.virt_lines)
 
   local hunks = M._diff(a_toks, b_toks, DIFF_INLINE_OPTS)
   if #hunks == 0 then
