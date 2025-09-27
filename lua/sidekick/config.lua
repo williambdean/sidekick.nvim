@@ -41,36 +41,33 @@ function M.setup(opts)
 
   local group = vim.api.nvim_create_augroup("sidekick", { clear = true })
 
-  -- Copilot requires the custom didFocus notification
-  vim.api.nvim_create_autocmd("BufEnter", {
+  vim.api.nvim_create_autocmd("LspAttach", {
     group = group,
     callback = function(ev)
-      local client = M.get_client(ev.buf)
-      if not client then
-        return
+      local client = vim.lsp.get_client_by_id(ev.data.client_id)
+      if client and client.name == "copilot" then
+        require("sidekick.status").attach(client)
       end
-
-      ---@diagnostic disable-next-line: param-type-mismatch
-      client:notify("textDocument/didFocus", {
-        textDocument = { uri = vim.uri_from_bufnr(ev.buf) },
-      })
     end,
   })
 
-  vim.lsp.config("copilot", {
-    handlers = {
-      didChangeStatus = function(...)
-        return require("sidekick.status")._handler(...)
-      end,
-    },
-  })
-
   vim.schedule(function()
+    local Util = require("sidekick.util")
+
     M.set_hl()
     vim.api.nvim_create_autocmd("ColorScheme", {
       group = group,
       callback = M.set_hl,
     })
+
+    -- Copilot requires the custom didFocus notification
+    local function notify_focus()
+      local buf = vim.api.nvim_get_current_buf()
+      local client = M.get_client(buf)
+      ---@diagnostic disable-next-line: param-type-mismatch
+      return client and client:notify("textDocument/didFocus", { textDocument = { uri = vim.uri_from_bufnr(buf) } })
+        or nil
+    end
 
     ---@param events string[]
     ---@param fn fun()
@@ -86,7 +83,8 @@ function M.setup(opts)
     end
 
     on(M.nes.clear.events, require("sidekick").clear)
-    on(M.nes.trigger.events, require("sidekick.util").debounce(require("sidekick.nes").update, M.nes.debounce))
+    on(M.nes.trigger.events, Util.debounce(require("sidekick.nes").update, M.nes.debounce))
+    on({ "BufEnter", "WinEnter" }, Util.debounce(notify_focus, 10))
 
     if M.nes.clear.esc then
       local ESC = vim.keycode("<Esc>")
@@ -95,6 +93,12 @@ function M.setup(opts)
           require("sidekick").clear()
         end
       end, nil)
+    end
+
+    -- attach to existing copilot clients
+    notify_focus()
+    for _, client in ipairs(vim.lsp.get_clients({ name = "copilot" })) do
+      require("sidekick.status").attach(client)
     end
   end)
 end

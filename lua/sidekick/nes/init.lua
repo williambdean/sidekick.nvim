@@ -167,7 +167,10 @@ function M.apply()
     local last = edits[#edits]
     local diff = require("sidekick.nes.diff").diff(last)
 
+    -- apply the edits
     vim.lsp.util.apply_text_edits(text_edits, buf, client.offset_encoding)
+
+    -- let the LSP server know
     for _, edit in ipairs(edits) do
       client:exec_cmd(edit.command, { bufnr = buf })
     end

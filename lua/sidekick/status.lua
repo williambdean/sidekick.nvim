@@ -11,7 +11,7 @@ local status = {} ---@type table<integer, sidekick.lsp.Status>
 
 ---@param res sidekick.lsp.Status
 ---@type lsp.Handler
-function M._handler(err, res, ctx)
+function M.on_status(err, res, ctx)
   if err then
     return
   end
@@ -24,6 +24,11 @@ function M._handler(err, res, ctx)
     end
     require("sidekick.util").notify(msg, res.kind == "Error" and vim.log.levels.ERROR or vim.log.levels.WARN)
   end
+end
+
+---@param client vim.lsp.Client
+function M.attach(client)
+  client.handlers.didChangeStatus = M.on_status
 end
 
 ---@param buf? integer
