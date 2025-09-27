@@ -49,7 +49,10 @@ local DIFF_INLINE_OPTS = {
 ---@param edit sidekick.NesEdit
 function M.parse_edit(edit)
   local lines = vim.api.nvim_buf_get_lines(edit.buf, edit.from[1], edit.to[1] + 1, false)
-  local first, last = lines[1], lines[#lines]
+  if #lines == 0 then
+    lines = { "" }
+  end
+  local first, last = lines[1] or "", lines[#lines] or ""
   return table.concat(lines, "\n"), first:sub(1, edit.from[2]) .. edit.text .. last:sub(edit.to[2] + 1)
 end
 
@@ -121,7 +124,7 @@ function M.diff_lines(diff)
     if #inline_hunks > 0 then
       vim.list_extend(diff.hunks, inline_hunks)
     else
-      local row = diff.range.from[1] + ai - 1
+      local row = diff.range.from[1] + math.max(ai - 1, 0)
       ---@type sidekick.diff.Hunk
       local h = {
         kind = ac > 0 and bc > 0 and "change" or ac > 0 and "delete" or "add",
