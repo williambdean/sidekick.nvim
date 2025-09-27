@@ -10,9 +10,7 @@ local defaults = {
   },
   signs = {
     enabled = true, -- enable signs by default
-    add = " ",
-    change = " ",
-    delete = " ",
+    icon = " ",
   },
   nes = {
     enabled = function(buf)
@@ -116,9 +114,7 @@ function M.set_hl()
     DiffContext = "DiffChange",
     DiffAdd = "DiffText",
     DiffDelete = "DiffDelete",
-    SignAdd = "DiagnosticSignOk",
-    SignChange = "DiagnosticSignWarn",
-    SignDelete = "DiagnosticSignError",
+    Sign = "Special",
   }
   for from, to in pairs(links) do
     vim.api.nvim_set_hl(0, "Sidekick" .. from, { link = to, default = true })

@@ -18,22 +18,16 @@ function M.render(edit)
 
   local from, to = edit.from, edit.to
 
+  local signs = Config.signs.enabled
   vim.api.nvim_buf_set_extmark(edit.buf, Config.ns, from[1], 0, {
     end_line = to[1] + 1,
     hl_group = "SidekickDiffContext",
     hl_eol = true,
+    sign_text = signs and Config.signs.icon or nil,
+    sign_hl_group = signs and "SidekickSign" or nil,
   })
 
-  local signs = Config.signs.enabled
-
   for _, hunk in ipairs(diff.hunks) do
-    if signs then
-      vim.api.nvim_buf_set_extmark(edit.buf, Config.ns, hunk.pos[1], 0, {
-        sign_text = Config.signs.change,
-        sign_hl_group = "SidekickSign" .. hunk.kind:sub(1, 1):upper() .. hunk.kind:sub(2),
-      })
-    end
-
     for _, extmark in ipairs(hunk.extmarks) do
       local opts = vim.tbl_extend("force", {}, extmark) ---@type sidekick.Extmark
       opts.row, opts.col = nil, nil
