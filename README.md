@@ -154,9 +154,7 @@ local defaults = {
   },
   signs = {
     enabled = true, -- enable signs by default
-    add = " ",
-    change = " ",
-    delete = " ",
+    icon = " ",
   },
   nes = {
     enabled = function(buf)
