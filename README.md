@@ -223,8 +223,6 @@ Example for [lualine.nvim](https://github.com/nvim-lualine/lualine.nvim):
 
 <!-- setup_lualine:end -->
 
-The handler automatically notifies you when authentication is required.
-
 ## 📄 License
 
 Released under the [MIT License](LICENSE).
