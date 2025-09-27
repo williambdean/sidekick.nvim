@@ -194,7 +194,10 @@ USAGE                                      *sidekick.nvim-sidekick.nvim-usage*
 
 STATUSLINE INTEGRATION    *sidekick.nvim-sidekick.nvim-statusline-integration*
 
-Example for lualine.nvim <https://github.com/nvim-lualine/lualine.nvim>:
+Using the `require("sidekick.status")` API, you can easily integrate **Copilot
+LSP** in your statusline.
+
+Example for lualine.nvim ~
 
 >lua
     {
