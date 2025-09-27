@@ -102,35 +102,6 @@ function M._handler(err, res, ctx)
     end
   end
 
-  if vim.api.nvim_buf_get_name(0):find("foo%.cs") then
-    M._edits = {
-      {
-        buf = vim.api.nvim_get_current_buf(),
-        command = {
-          arguments = { "a8b05178-7525-4b4d-90a4-31da980dfa90" },
-          command = "github.copilot.didAcceptCompletionItem",
-          title = "Accept inline edit",
-        },
-        from = { 15, 0 },
-        range = {
-          ["end"] = {
-            character = 88,
-            line = 17,
-          },
-          start = {
-            character = 0,
-            line = 15,
-          },
-        },
-        text = '    private Task<Dictionary<string, double, int>> FetchData(string city, Unit unit)\n    {\n        var unitParam = unit == Unit.Celsius ? "c" : "f";\n        var response = await _client.GetStringAsync($"/api/weather?city={city}&unit={unitParam}");',
-        textDocument = {
-          uri = "file:///home/folke/projects/sidekick.nvim/foo.cs",
-          version = vim.lsp.util.buf_versions[vim.api.nvim_get_current_buf()],
-        },
-        to = { 17, 88 },
-      },
-    }
-  end
   require("sidekick.nes.ui").update()
 end
 

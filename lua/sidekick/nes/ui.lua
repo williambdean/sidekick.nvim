@@ -40,41 +40,6 @@ function M.render(edit)
       opts.row, opts.col = nil, nil
       vim.api.nvim_buf_set_extmark(edit.buf, Config.ns, extmark.row, extmark.col, opts)
     end
-
-    -- if hunk.delete then
-    --   vim.api.nvim_buf_set_extmark(edit.buf, Config.ns, hunk.delete.from[1], hunk.delete.from[2], {
-    --     end_line = hunk.delete.to[1],
-    --     end_col = hunk.delete.to[2],
-    --     hl_group = "SidekickDiffDelete",
-    --   })
-    -- end
-    -- if hunk.kind == "inline" then
-    --   -- Inline Change
-    --   if hunk.add then
-    --     local add = TS.slice(virt_lines[hunk.add.from[1]], hunk.add.from[2], hunk.add.to[2])
-    --     vim.api.nvim_buf_set_extmark(edit.buf, Config.ns, hunk.add.pos[1], hunk.add.pos[2], {
-    --       virt_text_pos = "inline",
-    --       virt_text = add,
-    --     })
-    --   end
-    -- else
-    --   -- Block Change
-    --   if hunk.add then
-    --     local add = vim.list_slice(virt_lines, hunk.add.from[1], hunk.add.to[1])
-    --     vim.api.nvim_buf_set_extmark(edit.buf, Config.ns, hunk.add.pos[1], hunk.add.pos[2], {
-    --       hl_eol = true,
-    --       virt_lines = vim.tbl_map(function(vt)
-    --         -- HACK: make sure the virtual line covers the full width
-    --         table.insert(vt, { string.rep(" ", vim.o.columns), "SidekickDiffContext" })
-    --         return vt
-    --       end, add),
-    --       hl_mode = "combine",
-    --       -- the below doesn't work well with virt_lines, so disable for now
-    --       -- sign_text = Config.signs.add,
-    --       -- sign_hl_group = "SidekickSignAdd",
-    --     })
-    --   end
-    -- end
   end
 end
 
