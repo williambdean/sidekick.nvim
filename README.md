@@ -198,7 +198,11 @@ local defaults = {
 
 ## 📟 Statusline Integration
 
-Example for [lualine.nvim](https://github.com/nvim-lualine/lualine.nvim):
+Using the `require("sidekick.status")` API, you can easily integrate **Copilot LSP**
+in your statusline.
+
+<details>
+<summary>Example for <a href="https://github.com/nvim-lualine/lualine.nvim">lualine.nvim</a></summary>
 
 <!-- setup_lualine:start -->
 
@@ -226,6 +230,8 @@ Example for [lualine.nvim](https://github.com/nvim-lualine/lualine.nvim):
 ```
 
 <!-- setup_lualine:end -->
+
+</details>
 
 ## 📄 License
 
