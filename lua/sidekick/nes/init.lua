@@ -19,9 +19,25 @@ local M = {}
 M._edits = {} ---@type sidekick.NesEdit[]
 M._requests = {} ---@type table<number, number>
 
+---@param buf? integer
+---@return boolean
+local function is_enabled(buf)
+  local enabled = Config.nes.enabled
+  buf = buf or vim.api.nvim_get_current_buf()
+  if type(enabled) == "function" then
+    return enabled(buf)
+  end
+  return enabled ~= false
+end
+
 function M.update()
-  M.cancel()
   local buf = vim.api.nvim_get_current_buf()
+  if not is_enabled(buf) then
+    M.clear()
+    return
+  end
+
+  M.cancel()
   local client = Config.get_client(buf)
   if not client then
     return
@@ -46,6 +62,9 @@ function M.get(buf)
       return false
     end
     if edit.textDocument.version ~= vim.lsp.util.buf_versions[edit.buf] then
+      return false
+    end
+    if not is_enabled(edit.buf) then
       return false
     end
     return buf == nil or edit.buf == buf
@@ -94,7 +113,7 @@ function M._handler(err, res, ctx)
   for _, edit in ipairs(res.edits or {}) do
     local fname = vim.uri_to_fname(edit.textDocument.uri)
     local buf = vim.fn.bufnr(fname, false)
-    if buf and vim.api.nvim_buf_is_valid(buf) then
+    if buf and vim.api.nvim_buf_is_valid(buf) and is_enabled(buf) then
       ---@cast edit sidekick.NesEdit
       edit.buf = buf
       edit.from, edit.to = pos(buf, edit.range.start), pos(buf, edit.range["end"])
@@ -108,6 +127,9 @@ end
 ---@return boolean true if jumped
 function M.jump()
   local buf = vim.api.nvim_get_current_buf()
+  if not is_enabled(buf) then
+    return false
+  end
   local edit = M.get(buf)[1]
 
   if not edit then
@@ -145,12 +167,20 @@ function M._jump(pos)
 end
 
 function M.have()
-  return #M.get(vim.api.nvim_get_current_buf()) > 0
+  local buf = vim.api.nvim_get_current_buf()
+  if not is_enabled(buf) then
+    return false
+  end
+  return #M.get(buf) > 0
 end
 
 ---@return boolean true if text edit was applied
 function M.apply()
   local buf = vim.api.nvim_get_current_buf()
+  if not is_enabled(buf) then
+    M.clear()
+    return false
+  end
   local client = Config.get_client(buf)
   local edits = M.get(buf)
   if not client or #edits == 0 then
