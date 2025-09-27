@@ -5,6 +5,7 @@ native diff preview, jump helpers, and status reporting. The plugin sits on top 
 Copilot's LSP server and turns AI edits into something you can inspect, navigate, and
 apply without leaving the buffer.
 
+> [!WARNING]  
 > **Status**: Early preview. The API is still settling; expect breaking changes while
 > Copilot's inline edit endpoints evolve.
 
