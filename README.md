@@ -26,9 +26,11 @@ apply without leaving the buffer.
 
 ## 📋 Requirements
 
-- Neovim **0.11.0** or newer (uses the latest LSP tooling like `vim.lsp.config`).
-- Access to the official GitHub Copilot LSP (`:LspStart copilot`).
-- A working internet connection for Copilot itself.
+- **Neovim** `>= 0.11.2` or newer
+- The official **Copilot LSP** server, enabled with `vim.lsp.enable`
+  **TIP:** can be installed with [mason-lspconfig.nvim](https://github.com/mason-org/mason-lspconfig.nvim)
+- A working `lsp/copilot.lua` configuration.
+  **TIP:** Included in [nvim-lspconfig](https://github.com/neovim/nvim-lspconfig)
 
 ## 📦 Installation
 
