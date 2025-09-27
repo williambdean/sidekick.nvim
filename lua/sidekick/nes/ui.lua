@@ -1,6 +1,5 @@
 local Config = require("sidekick.config")
 local Nes = require("sidekick.nes")
-local TS = require("sidekick.treesitter")
 
 local M = {}
 
