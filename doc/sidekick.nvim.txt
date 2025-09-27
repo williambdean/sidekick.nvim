@@ -24,6 +24,8 @@ inspect, navigate, and apply without leaving the buffer.
   **Status**: Early preview. The API is still settling; expect breaking changes
   while Copilot’s inline edit endpoints evolve.
 
+
+
 FEATURES                                *sidekick.nvim-sidekick.nvim-features*
 
 - **Live inline edits** – automatically request Copilot NES suggestions on cursor
