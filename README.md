@@ -1,9 +1,8 @@
 # 🤖 `sidekick.nvim`
 
-**sidekick.nvim** brings GitHub Copilot "Next Edit Suggestions" (NES) to Neovim with a
-native diff preview, jump helpers, and status reporting. The plugin sits on top of
-Copilot's LSP server and turns AI edits into something you can inspect, navigate, and
-apply without leaving the buffer.
+**sidekick.nvim** is a GitHub Copilot "Next Edit Suggestions" client for Neovim. It taps
+straight into Copilot's LSP endpoint, renders the diff with Treesitter highlighting, and
+lets you inspect, jump through, or apply every suggestion without leaving the buffer.
 
 > [!WARNING]  
 > **Status**: Early preview. The API is still settling; expect breaking changes while
@@ -13,16 +12,12 @@ apply without leaving the buffer.
 
 ## ✨ Features
 
-- 🪄 **Live inline edits** – automatically request Copilot NES suggestions on cursor
-  movement or insert mode transitions.
-- 🧭 **Diff-aware navigation** – render inline or block-style diffs with Treesitter
-  highlights, signs, and jump helpers.
-- 🎯 **One-keystroke apply** – accept all pending edits with a single mapping while
-  keeping jumplist history intact.
-- 🧹 **Smart clearing** – automatically retract suggestions when you resume typing,
-  save the buffer, or hit `<Esc>`.
-- 📡 **Status helpers** – expose `sidekick.status.get()` so statuslines/widgets can show
-  Copilot connectivity, activity state, and messages.
+- 🪄 **Auto-fetch suggestions** when you pause typing or move the cursor—no manual trigger needed.
+- 🎨 **Inline and block diffs** with Treesitter colour, whitespace highlighting, and configurable token granularity.
+- 🧭 **Jump-through workflow** via `nes_jump`/`nes_jump_or_apply` to review edits hunk by hunk or accept them all at once.
+- 🧼 **Smart clearing hooks** that retract pending edits on insert, save, or `<Esc>` so buffers stay tidy.
+- 📊 **Statusline helpers** through `sidekick.status.get()` for connection state, request progress, and preview text.
+- 🔌 **Plugin-friendly API** including debounce utilities, virtual text helpers, and optional jumplist integration.
 
 ## 📋 Requirements
 
