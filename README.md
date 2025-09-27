@@ -62,7 +62,11 @@ Install with your favorite manager. With [lazy.nvim](https://github.com/folke/la
 
 <!-- setup_base:end -->
 
-### Integrate `<Tab>` in insert mode with [blink.cmp](https://github.com/saghen/blink.cmp)
+> [!TIP]
+> It's a good idea to run `:checkhealth sidekick` after install.
+
+<details>
+  <summary>Integrate <code>&lt;Tab&gt;</code> in insert mode with <a href="https://github.com/saghen/blink.cmp">blink.cmp</a></summary>
 
 <!-- setup_blink:start -->
 
@@ -91,7 +95,10 @@ Install with your favorite manager. With [lazy.nvim](https://github.com/folke/la
 
 <!-- setup_blink:end -->
 
-### Custom `<Tab>` integration for insert mode
+</details>
+
+<details>
+  <summary>Custom <code>&lt;Tab&gt;</code> integration for <b>insert mode</b></summary>
 
 <!-- setup_custom:start -->
 
@@ -129,6 +136,8 @@ Install with your favorite manager. With [lazy.nvim](https://github.com/folke/la
 ```
 
 <!-- setup_custom:end -->
+
+</details>
 
 After installation sign in with `:LspCopilotSignIn` if prompted.
 
@@ -192,7 +201,7 @@ local defaults = {
 - Hook into the `User` autocmd (`pattern = "SidekickNesDone"`) to run follow-up logic
   after an edit has been applied.
 
-## 📟 Statusline integration
+## 📟 Statusline Integration
 
 Example for [lualine.nvim](https://github.com/nvim-lualine/lualine.nvim):
 
