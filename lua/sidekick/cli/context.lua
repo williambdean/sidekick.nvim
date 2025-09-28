@@ -4,6 +4,24 @@ local M = {}
 
 local CTRL_V = vim.keycode("<C-V>")
 
+local function resolve_name(opts)
+  local buf = opts.buf
+  local name = opts.name
+  name = name or buf and vim.api.nvim_buf_get_name(buf)
+
+  if not name or name == "" then
+    return "[No Name]"
+  end
+  local cwd = vim.uv.cwd()
+  if cwd then
+    local ok, rel = pcall(vim.fs.relpath, cwd, name)
+    if ok and rel and rel ~= "" and rel ~= "." then
+      return rel
+    end
+  end
+  return name
+end
+
 ---@class sidekick.context.Location
 ---@field buf? integer
 ---@field name? string
@@ -16,8 +34,7 @@ function M.format_location(opts)
   opts = opts or {}
   assert(opts.buf or opts.name, "Either buf or name must be provided")
 
-  local fname = opts.name or vim.api.nvim_buf_get_name(opts.buf or 0)
-  fname = vim.fs.relpath(vim.uv.cwd() or ".", fname) or fname
+  local fname = resolve_name(opts)
   local loc = ""
   if opts.range then
     local from, to = opts.range.from, opts.range.to
@@ -38,6 +55,9 @@ function M.format_location(opts)
     loc = ("%d:%d"):format(opts.row, opts.col + 1)
   elseif opts.row then
     loc = ("%d"):format(opts.row)
+  end
+  if loc == "" then
+    return ("@%s"):format(fname)
   end
   return ("@%s:%s"):format(fname, loc)
 end
@@ -83,12 +103,22 @@ function M.get_diagnostics(buf, opts)
   end)
   local ret = {} ---@type string[]
   for _, d in ipairs(diags) do
+    local severity = d.severity and vim.diagnostic.severity[d.severity] or "UNKNOWN"
+    local lnum = (d.lnum or 0) + 1
+    local col = d.col or 0
+    local end_lnum = (d.end_lnum or d.lnum or 0) + 1
+    local end_col = d.end_col or d.col or 0
+
     ret[#ret + 1] = ("[%s] %s %s"):format(
-      vim.diagnostic.severity[d.severity],
+      severity,
       d.message:gsub("\n", " "),
       M.format_location({
         buf = buf,
-        range = { from = { d.lnum + 1, d.col }, to = { d.end_lnum + 1, d.end_col }, kind = "char" },
+        range = {
+          from = { lnum, col },
+          to = { end_lnum, end_col },
+          kind = "char",
+        },
       })
     )
   end
