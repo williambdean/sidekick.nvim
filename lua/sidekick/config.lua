@@ -32,6 +32,44 @@ local defaults = {
       inline = "words",
     },
   },
+  -- Work with AI cli tools directly from within Neovim
+  cli = {
+    win = {
+      wo = {}, ---@type vim.wo
+      bo = {}, ---@type vim.bo
+      width = 80,
+      height = 20,
+      layout = "vertical", ---@type "vertical" | "horizontal"
+      position = "right", ---@type "left"|"bottom"|"top"|"right"
+      ---@type LazyK
+      keys = {},
+    },
+    ---@type table<string, sidekick.cli.Tool.spec>
+    tools = {
+      claude = { cmd = { "claude" } },
+      codex = { cmd = { "codex", "--search" } },
+      copilot = { cmd = { "copilot" } },
+      gemini = { cmd = { "gemini" } },
+    },
+    ---@type table<string, sidekick.Prompt.spec>
+    prompts = {
+      explain = "Explain this code",
+      diagnostics = {
+        msg = "What do the diagnostics in this file mean?",
+        diagnostics = true,
+      },
+      fix = {
+        msg = "Can you fix the issues in this code?",
+        diagnostics = true,
+      },
+      review = {
+        msg = "Can you review this code for any issues or improvements?",
+        diagnostics = true,
+      },
+      optimize = "How can this code be optimized?",
+      tests = "Can you write tests for this code?",
+    },
+  },
 }
 
 local config = vim.deepcopy(defaults) --[[@as sidekick.Config]]
@@ -115,6 +153,7 @@ function M.set_hl()
     DiffAdd = "DiffText",
     DiffDelete = "DiffDelete",
     Sign = "Special",
+    Chat = "NormalFloat",
   }
   for from, to in pairs(links) do
     vim.api.nvim_set_hl(0, "Sidekick" .. from, { link = to, default = true })
