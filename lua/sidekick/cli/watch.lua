@@ -4,7 +4,7 @@ local M = {} -- test comment
 
 M._watches = {} ---@type table<string, {event: uv.uv_fs_event_t, timer: uv.uv_timer_t}>
 M.enabled = false
-M._debug = true
+M._debug = false
 
 function M.refresh()
   vim.cmd.checktime()
