@@ -1,3 +1,5 @@
+local Config = require("sidekick.config")
+
 local M = {}
 
 local start = vim.health.start or vim.health.report_start
@@ -15,6 +17,8 @@ function M.check()
     return
   end
 
+  start("Sidekick Copilot LSP")
+
   if vim.lsp.is_enabled("copilot") then
     ok("Copilot LSP is enabled")
   else
@@ -26,6 +30,21 @@ function M.check()
       ok("Sidekick is handling Copilot LSP status notifications for client: " .. client.id)
     else
       warn("Sidekick is not handling Copilot LSP status notifications for client: " .. client.id)
+    end
+  end
+
+  start("Sidekick AI CLI")
+  if vim.o.autoread then
+    ok("autoread is enabled")
+  else
+    warn("autoread is disabled, file changes from AI CLI tools will not be detected automatically")
+  end
+
+  for _, tool in ipairs(require("sidekick.cli").get_tools()) do
+    if tool.installed then
+      ok("`" .. tool.name .. "` is installed")
+    else
+      warn("`" .. tool.name .. "` is not installed")
     end
   end
 end

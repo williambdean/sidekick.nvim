@@ -129,6 +129,7 @@ function M:start()
       end)
     end
   end)
+  require("sidekick.cli.watch").enable()
 end
 
 function M:focus()
@@ -186,6 +187,9 @@ end
 
 function M:close()
   M.terminals[self.tool.name] = nil
+  if vim.tbl_isempty(M.terminals) then
+    require("sidekick.cli.watch").disable()
+  end
   if self.timer and not self.timer:is_closing() then
     self.timer:close()
     self.timer = nil
