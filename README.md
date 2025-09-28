@@ -1,8 +1,8 @@
 # 🤖 `sidekick.nvim`
 
-**sidekick.nvim** is a GitHub Copilot "Next Edit Suggestions" client for Neovim. It taps
-straight into Copilot's LSP endpoint, renders the diff with Treesitter highlighting, and
-lets you inspect, jump through, or apply every suggestion without leaving the buffer.
+**sidekick.nvim** is your Neovim AI sidekick. It combines Copilot LSP's "Next Edit
+Suggestions" with split terminals for any AI CLI, so you can review inline edits,
+ask follow-up questions, and run fixes from the same buffer and cursor context.
 
 > [!WARNING]  
 > **Status**: Early preview. The API is still settling; expect breaking changes while
@@ -18,6 +18,7 @@ lets you inspect, jump through, or apply every suggestion without leaving the bu
 - 🧼 **Smart clearing hooks** that retract pending edits on insert, save, or `<Esc>` so buffers stay tidy.
 - 📊 **Statusline helpers** through `sidekick.status.get()` for connection state, request progress, and preview text.
 - 🔌 **Plugin-friendly API** including debounce utilities, virtual text helpers, and optional jumplist integration.
+- 💬 **AI CLI terminals** that capture cursor position, diagnostics, and prompts so you can chat with local tools (Claude, Copilot CLI, Gemini, etc.) without leaving Neovim.
 
 ## 📋 Requirements
 
