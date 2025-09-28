@@ -27,4 +27,3 @@ describe("util notify", function()
     }, called)
   end)
 end)
-

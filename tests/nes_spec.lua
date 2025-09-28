@@ -63,4 +63,3 @@ describe("nes enabled option", function()
     assert.are.same({}, Nes.get(buf))
   end)
 end)
-

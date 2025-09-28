@@ -51,7 +51,6 @@ describe("health", function()
     debug.setupvalue(Health.check, 2, ok_stub)
     debug.setupvalue(Health.check, 3, error_stub)
     debug.setupvalue(Health.check, 4, warn_stub)
-
   end)
 
   after_each(function()

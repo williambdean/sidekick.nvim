@@ -1,7 +1,7 @@
 ---@module 'luassert'
 
-local Status = require("sidekick.status")
 local Config = require("sidekick.config")
+local Status = require("sidekick.status")
 
 describe("status handler", function()
   local notify
