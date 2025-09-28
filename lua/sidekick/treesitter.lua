@@ -65,7 +65,7 @@ function M.get_virtual_lines(lines, opts)
   local ret = {} ---@type sidekick.TSVirtualLines
   for i = 1, #lines do
     local line = lines[i]
-    local from = 1
+    local from = 0
     local hl_group = nil ---@type string?
 
     ---@param to number
