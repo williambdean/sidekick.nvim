@@ -259,8 +259,10 @@ local defaults = {
       claude = { cmd = { "claude" } },
       codex = { cmd = { "codex", "--search" } },
       copilot = { cmd = { "copilot" } },
+      cursor = { cmd = { "cursor-agent" } },
       gemini = { cmd = { "gemini" } },
       grok = { cmd = { "grok" } },
+      opencode = { cmd = { "opencode" } },
       qwen = { cmd = { "qwen" } },
     },
     ---@type table<string, sidekick.Prompt.spec>
@@ -350,7 +352,9 @@ Sidekick preconfigures a handful of popular CLIs so you can get started quickly:
 - [`codex`](https://github.com/openai/codex) – OpenAI’s Codex CLI.
 - [`gemini`](https://github.com/google-gemini/gemini-cli) – Google’s Gemini CLI.
 - [`copilot`](https://github.com/github/gh-copilot) – GitHub Copilot CLI.
+- [`cursor`](https://cursor.com/docs/cli/overview) – Cursor’s command-line interface.
 - [`grok`](https://github.com/superagent-ai/grok-cli) – xAI’s Grok CLI.
+- [`opencode`](https://github.com/OpenCodeAI/opencode) – OpenCode’s CLI for local workflows.
 - [`qwen`](https://github.com/QwenLM/qwen-code) – Alibaba’s Qwen Code CLI.
 
 ## 📟 Statusline Integration

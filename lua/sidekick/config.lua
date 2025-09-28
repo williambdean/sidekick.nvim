@@ -50,8 +50,10 @@ local defaults = {
       claude = { cmd = { "claude" } },
       codex = { cmd = { "codex", "--search" } },
       copilot = { cmd = { "copilot" } },
+      cursor = { cmd = { "cursor-agent" } },
       gemini = { cmd = { "gemini" } },
       grok = { cmd = { "grok" } },
+      opencode = { cmd = { "opencode" } },
       qwen = { cmd = { "qwen" } },
     },
     ---@type table<string, sidekick.Prompt.spec>
