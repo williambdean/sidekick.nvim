@@ -125,7 +125,7 @@ function M.diff_lines(diff)
     if #inline_hunks > 0 then
       vim.list_extend(diff.hunks, inline_hunks)
     else
-      local row = diff.range.from[1] + math.max(ai - 1, 0)
+      local row = math.max(diff.range.from[1] + ai - 1, 0)
       ---@type sidekick.diff.Hunk
       local h = {
         kind = ac > 0 and bc > 0 and "change" or ac > 0 and "delete" or "add",
