@@ -1,7 +1,7 @@
 ---@module 'luassert'
 
-local Diff = require("sidekick.nes.diff")
 local Config = require("sidekick.config")
+local Diff = require("sidekick.nes.diff")
 local TS = require("sidekick.treesitter")
 
 local function stub_ts()
@@ -30,7 +30,8 @@ local function stub_ts()
   return function()
     TS.get_virtual_lines = original.get_virtual_lines
     TS.highlight_ws = original.highlight_ws
-  end, calls
+  end,
+    calls
 end
 
 local function make_buf(lines, ft)
@@ -256,9 +257,10 @@ describe("diff", function()
     {
       name = "appending after last line produces block add",
       inline = "words",
+      lines = { "test1", "test2" },
       edit = {
-        from = { 1, 0 },
-        to = { 1, 0 },
+        from = { 2, 0 },
+        to = { 2, 0 },
         text = "bar",
       },
       check = function(diff)
@@ -287,7 +289,7 @@ describe("diff", function()
         local hunk = diff.hunks[1]
         assert.is_nil(hunk.inline)
         assert.are.same("add", hunk.kind)
-        assert.are.same({ 5, 0 }, hunk.pos)
+        assert.are.same({ 4, 0 }, hunk.pos)
         assert.are.same(1, #hunk.extmarks)
         assert.is_true(hunk.extmarks[1].hl_eol)
         assert.are.same({ {
@@ -314,7 +316,8 @@ describe("diff", function()
       local restore, calls = stub_ts()
       local buf = make_buf(case.lines or { "local foo = 1" })
       Config.nes.diff.inline = case.inline
-      local edit = make_edit(buf, case.edit.from[1], case.edit.from[2], case.edit.to[1], case.edit.to[2], case.edit.text)
+      local edit =
+        make_edit(buf, case.edit.from[1], case.edit.from[2], case.edit.to[1], case.edit.to[2], case.edit.text)
       local ok, diff = pcall(Diff.diff, edit)
       vim.api.nvim_buf_delete(buf, { force = true })
       restore()
