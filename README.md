@@ -345,12 +345,12 @@ layout, or extend the prompt list. See the defaults above for all available fiel
 
 Sidekick preconfigures a handful of popular CLIs so you can get started quickly:
 
-- `claude` – Anthropic’s official CLI.
-- `codex` – OpenAI’s Codex CLI.
-- `gemini` – Google’s Gemini CLI.
-- `copilot` – GitHub Copilot CLI
-- `grok` – xAI’s Grok CLI.
-- `qwen` – Alibaba’s Qwen Code CLI.
+- [`claude`](https://github.com/anthropics/claude-code) – Anthropic’s official CLI.
+- [`codex`](https://github.com/openai/codex) – OpenAI’s Codex CLI.
+- [`gemini`](https://github.com/google-gemini/gemini-cli) – Google’s Gemini CLI.
+- [`copilot`](https://github.com/github/gh-copilot) – GitHub Copilot CLI.
+- [`grok`](https://github.com/superagent-ai/grok-cli) – xAI’s Grok CLI.
+- [`qwen`](https://github.com/QwenLM/qwen-code) – Alibaba’s Qwen Code CLI.
 
 ## 📟 Statusline Integration
 
