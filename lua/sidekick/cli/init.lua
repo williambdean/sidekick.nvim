@@ -269,9 +269,11 @@ function M.ask(opts)
 end
 
 function M.select_prompt()
-  if pcall(require, "snacks.picker") then
-    Snacks.picker.sources.sidekick_prompts = require("sidekick.cli.snacks").prompts
-    Snacks.picker.sidekick_prompts()
+  local ok = pcall(require, "snacks.picker")
+  if ok then
+    local snacks = require("snacks")
+    snacks.picker.sources.sidekick_prompts = require("sidekick.cli.snacks").prompts
+    snacks.picker.sidekick_prompts()
     return
   end
   local prompts = vim.tbl_keys(Config.cli.prompts)
