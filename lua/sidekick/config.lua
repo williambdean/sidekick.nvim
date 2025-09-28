@@ -50,6 +50,8 @@ local defaults = {
       codex = { cmd = { "codex", "--search" } },
       copilot = { cmd = { "copilot" } },
       gemini = { cmd = { "gemini" } },
+      grok = { cmd = { "grok" } },
+      qwen = { cmd = { "qwen" } },
     },
     ---@type table<string, sidekick.Prompt.spec>
     prompts = {

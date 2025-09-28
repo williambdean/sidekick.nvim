@@ -18,7 +18,7 @@ ask follow-up questions, and run fixes from the same buffer and cursor context.
 - 🧼 **Smart clearing hooks** that retract pending edits on insert, save, or `<Esc>` so buffers stay tidy.
 - 📊 **Statusline helpers** through `sidekick.status.get()` for connection state, request progress, and preview text.
 - 🔌 **Plugin-friendly API** including debounce utilities, virtual text helpers, and optional jumplist integration.
-- 💬 **AI CLI terminals** that capture cursor position, diagnostics, and prompts so you can chat with local tools (Claude, Copilot CLI, Gemini, etc.) without leaving Neovim.
+- 💬 **AI CLI terminals** that capture cursor position, diagnostics, and prompts so you can chat with local tools (Claude, Copilot CLI, Gemini, Grok, Qwen, etc.) without leaving Neovim.
 
 ## 📋 Requirements
 
@@ -58,6 +58,22 @@ Install with your favorite manager. With [lazy.nvim](https://github.com/folke/la
         require("sidekick.cli").toggle({ focus = true })
       end,
       desc = "Sidekick Toggle CLI",
+      mode = { "n", "v" },
+    },
+    {
+      "<leader>ac",
+      function()
+        require("sidekick.cli").toggle({ name = "claude", focus = true })
+      end,
+      desc = "Sidekick Claude Toggle",
+      mode = { "n", "v" },
+    },
+    {
+      "<leader>ag",
+      function()
+        require("sidekick.cli").toggle({ name = "grok", focus = true })
+      end,
+      desc = "Sidekick Grok Toggle",
       mode = { "n", "v" },
     },
     {
@@ -168,11 +184,12 @@ Install with your favorite manager. With [lazy.nvim](https://github.com/folke/la
       mode = { "n", "v" },
     },
     {
-      "<leader>ap",
+      "<leader>ag",
       function()
-        require("sidekick.cli").select_prompt()
+        -- Jump straight into Grok with the current context
+        require("sidekick.cli").toggle({ name = "grok", focus = true })
       end,
-      desc = "Sidekick Prompt Picker",
+      desc = "Sidekick Grok Toggle",
     },
   },
 }
@@ -242,6 +259,8 @@ local defaults = {
       codex = { cmd = { "codex", "--search" } },
       copilot = { cmd = { "copilot" } },
       gemini = { cmd = { "gemini" } },
+      grok = { cmd = { "grok" } },
+      qwen = { cmd = { "qwen" } },
     },
     ---@type table<string, sidekick.Prompt.spec>
     prompts = {
@@ -321,6 +340,17 @@ Keymaps that pair well with the defaults:
 
 Tune the behaviour via `Config.cli`: add your own tool definitions, tweak window
 layout, or extend the prompt list. See the defaults above for all available fields.
+
+### Default CLI tools
+
+Sidekick preconfigures a handful of popular CLIs so you can get started quickly:
+
+- `claude` – Anthropic’s official CLI.
+- `codex` – OpenAI’s Codex CLI.
+- `gemini` – Google’s Gemini CLI.
+- `copilot` – GitHub Copilot CLI
+- `grok` – xAI’s Grok CLI.
+- `qwen` – Alibaba’s Qwen Code CLI.
 
 ## 📟 Statusline Integration
 
