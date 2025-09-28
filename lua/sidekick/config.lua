@@ -34,6 +34,7 @@ local defaults = {
   },
   -- Work with AI cli tools directly from within Neovim
   cli = {
+    watch = true, -- notify Neovim of file changes done by AI CLI tools
     win = {
       wo = {}, ---@type vim.wo
       bo = {}, ---@type vim.bo

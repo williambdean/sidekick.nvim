@@ -129,7 +129,9 @@ function M:start()
       end)
     end
   end)
-  require("sidekick.cli.watch").enable()
+  if Config.cli.watch then
+    require("sidekick.cli.watch").enable()
+  end
 end
 
 function M:focus()
