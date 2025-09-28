@@ -14,6 +14,7 @@ local M = {}
 ---@class sidekick.cli.Tool.spec
 ---@field cmd string[] Command to run the CLI tool
 ---@field env? table<string, string> Environment variables to set when running the command
+---@field url? string Web URL to open when the tool is not installed
 
 ---@class sidekick.cli.Tool: sidekick.cli.Tool.spec
 ---@field name string
@@ -49,6 +50,26 @@ local M = {}
 ---@class sidekick.cli.Keymap: vim.keymap.set.Opts
 ---@field mode? string|string[]
 
+---@param tool sidekick.cli.Tool
+---@return boolean opened true when a URL was opened
+local function open_tool_url(tool)
+  local display = tool.name or (tool.cmd and tool.cmd[1]) or "tool"
+
+  if not tool.url then
+    Util.warn(("No install URL configured for `%s`"):format(display))
+    return false
+  end
+
+  local ok, err = pcall(vim.ui.open, tool.url)
+  if not ok then
+    Util.error(("Failed to open %s: %s"):format(tool.url, err))
+    return false
+  end
+
+  Util.info(("Opening %s in your browser..."):format(tool.url))
+  return true
+end
+
 ---@param opts? sidekick.cli.Select
 function M.select_tool(opts)
   opts = opts or {}
@@ -56,6 +77,9 @@ function M.select_tool(opts)
 
   local on_select = function(choice)
     if choice then
+      if not choice.installed and open_tool_url(choice) then
+        return
+      end
       if opts.on_select then
         return opts.on_select(choice)
       end
@@ -152,6 +176,7 @@ function M.with(cb, opts)
       on_select = function(tool)
         if vim.fn.executable(tool.cmd[1]) == 0 then
           Util.error(("`%s` is not installed"):format(tool.cmd[1]))
+          open_tool_url(tool)
           return
         end
         cb(Terminal.new(tool))

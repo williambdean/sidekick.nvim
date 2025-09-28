@@ -256,14 +256,14 @@ local defaults = {
     },
     ---@type table<string, sidekick.cli.Tool.spec>
     tools = {
-      claude = { cmd = { "claude" } },
-      codex = { cmd = { "codex", "--search" } },
-      copilot = { cmd = { "copilot" } },
-      cursor = { cmd = { "cursor-agent" } },
-      gemini = { cmd = { "gemini" } },
-      grok = { cmd = { "grok" } },
-      opencode = { cmd = { "opencode" } },
-      qwen = { cmd = { "qwen" } },
+      claude = { cmd = { "claude" }, url = "https://github.com/anthropics/claude-code" },
+      codex = { cmd = { "codex", "--search" }, url = "https://github.com/openai/codex" },
+      copilot = { cmd = { "copilot" }, url = "https://github.com/github/copilot-cli" },
+      cursor = { cmd = { "cursor-agent" }, url = "https://cursor.com/cli" },
+      gemini = { cmd = { "gemini" }, url = "https://github.com/google-gemini/gemini-cli" },
+      grok = { cmd = { "grok" }, url = "https://github.com/superagent-ai/grok-cli" },
+      opencode = { cmd = { "opencode" }, url = "https://github.com/sst/opencode" },
+      qwen = { cmd = { "qwen" }, url = "https://github.com/QwenLM/qwen-code" },
     },
     ---@type table<string, sidekick.Prompt.spec>
     prompts = {
