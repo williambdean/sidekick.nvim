@@ -187,7 +187,7 @@ function M.toggle(opts)
   opts = type(opts) == "string" and { name = opts } or opts or {}
   M.with(function(t)
     t:toggle()
-    if t:is_open() and opts.focus then
+    if t:is_open() and opts.focus ~= false then
       t:focus()
     end
   end, { filter = { name = opts.name }, create = true })
