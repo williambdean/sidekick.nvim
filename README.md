@@ -51,6 +51,22 @@ Install with your favorite manager. With [lazy.nvim](https://github.com/folke/la
       expr = true,
       desc = "Goto/Apply Next Edit Suggestion",
     },
+    {
+      "<leader>aa",
+      function()
+        require("sidekick.cli").toggle({ focus = true })
+      end,
+      desc = "Sidekick Toggle CLI",
+      mode = { "n", "v" },
+    },
+    {
+      "<leader>ap",
+      function()
+        require("sidekick.cli").select_prompt()
+      end,
+      desc = "Sidekick Ask Prompt",
+      mode = { "n", "v" },
+    },
   },
 }
 ```
@@ -126,6 +142,37 @@ Install with your favorite manager. With [lazy.nvim](https://github.com/folke/la
       expr = true,
       desc = "Goto/Apply Next Edit Suggestion",
     },
+    {
+      "<leader>aa",
+      function()
+        require("sidekick.cli").toggle({ focus = true })
+      end,
+      desc = "Sidekick Toggle CLI",
+      mode = { "n", "v" },
+    },
+    {
+      "<leader>ac",
+      function()
+        -- Same as above, but opens Claude directly
+        require("sidekick.cli").toggle({ name = "claude", focus = true })
+      end,
+      desc = "Sidekick Claude Toggle",
+    },
+    {
+      "<leader>ap",
+      function()
+        require("sidekick.cli").select_prompt()
+      end,
+      desc = "Sidekick Ask Prompt",
+      mode = { "n", "v" },
+    },
+    {
+      "<leader>ap",
+      function()
+        require("sidekick.cli").select_prompt()
+      end,
+      desc = "Sidekick Prompt Picker",
+    },
   },
 }
 ```
@@ -176,6 +223,44 @@ local defaults = {
       inline = "words",
     },
   },
+  -- Work with AI cli tools directly from within Neovim
+  cli = {
+    win = {
+      wo = {}, ---@type vim.wo
+      bo = {}, ---@type vim.bo
+      width = 80,
+      height = 20,
+      layout = "vertical", ---@type "vertical" | "horizontal"
+      position = "right", ---@type "left"|"bottom"|"top"|"right"
+      ---@type LazyK
+      keys = {},
+    },
+    ---@type table<string, sidekick.cli.Tool.spec>
+    tools = {
+      claude = { cmd = { "claude" } },
+      codex = { cmd = { "codex", "--search" } },
+      copilot = { cmd = { "copilot" } },
+      gemini = { cmd = { "gemini" } },
+    },
+    ---@type table<string, sidekick.Prompt.spec>
+    prompts = {
+      explain = "Explain this code",
+      diagnostics = {
+        msg = "What do the diagnostics in this file mean?",
+        diagnostics = true,
+      },
+      fix = {
+        msg = "Can you fix the issues in this code?",
+        diagnostics = true,
+      },
+      review = {
+        msg = "Can you review this code for any issues or improvements?",
+        diagnostics = true,
+      },
+      optimize = "How can this code be optimized?",
+      tests = "Can you write tests for this code?",
+    },
+  },
 }
 ```
 
@@ -196,6 +281,45 @@ local defaults = {
   - `require("sidekick.nes").have()` – check if any edits are active in the buffer.
 - Hook into the `User` autocmd (`pattern = "SidekickNesDone"`) to run follow-up logic
   after an edit has been applied.
+
+## 🤖 AI CLI Integration
+
+Sidekick ships with a lightweight terminal wrapper so you can talk to local AI CLI
+tools without leaving Neovim. Each tool runs in its own scratch terminal window and
+shares helper prompts that bundle buffer context, the current cursor position, and
+diagnostics when requested.
+
+- `require("sidekick.cli").toggle()` – open or focus the most recent tool, or pick one if none are running.
+- `require("sidekick.cli").ask({ prompt = "review", submit = true })` – format a prompt,
+  push it to the active tool, and send it immediately.
+- `require("sidekick.cli").ask({ msg = "What does this do?", submit = true })` – same as above,
+  but with a custom message.
+- `require("sidekick.cli").select_prompt()` – browse the prompt presets (Snacks picker is
+  used when available).
+
+Keymaps that pair well with the defaults:
+
+```lua
+{
+  {
+    "<leader>aa",
+    function()
+      require("sidekick.cli").toggle({ focus = true })
+    end,
+    desc = "Sidekick Toggle CLI",
+  },
+  {
+    "<leader>ap",
+    function()
+      require("sidekick.cli").select_prompt()
+    end,
+    desc = "Sidekick Prompt Picker",
+  },
+}
+```
+
+Tune the behaviour via `Config.cli`: add your own tool definitions, tweak window
+layout, or extend the prompt list. See the defaults above for all available fields.
 
 ## 📟 Statusline Integration
 

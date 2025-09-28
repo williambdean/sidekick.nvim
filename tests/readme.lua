@@ -15,6 +15,22 @@ local base = {
       expr = true,
       desc = "Goto/Apply Next Edit Suggestion",
     },
+    {
+      "<leader>aa",
+      function()
+        require("sidekick.cli").toggle({ focus = true })
+      end,
+      desc = "Sidekick Toggle CLI",
+      mode = { "n", "v" },
+    },
+    {
+      "<leader>ap",
+      function()
+        require("sidekick.cli").select_prompt()
+      end,
+      desc = "Sidekick Ask Prompt",
+      mode = { "n", "v" },
+    },
   },
 }
 
@@ -45,6 +61,37 @@ local custom = {
       mode = { "i", "n" },
       expr = true,
       desc = "Goto/Apply Next Edit Suggestion",
+    },
+    {
+      "<leader>aa",
+      function()
+        require("sidekick.cli").toggle({ focus = true })
+      end,
+      desc = "Sidekick Toggle CLI",
+      mode = { "n", "v" },
+    },
+    {
+      "<leader>ac",
+      function()
+        -- Same as above, but opens Claude directly
+        require("sidekick.cli").toggle({ name = "claude", focus = true })
+      end,
+      desc = "Sidekick Claude Toggle",
+    },
+    {
+      "<leader>ap",
+      function()
+        require("sidekick.cli").select_prompt()
+      end,
+      desc = "Sidekick Ask Prompt",
+      mode = { "n", "v" },
+    },
+    {
+      "<leader>ap",
+      function()
+        require("sidekick.cli").select_prompt()
+      end,
+      desc = "Sidekick Prompt Picker",
     },
   },
 }
