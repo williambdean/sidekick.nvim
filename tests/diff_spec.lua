@@ -80,7 +80,7 @@ describe("diff", function()
         local hunk = diff.hunks[1]
         assert.are.same(true, hunk.inline)
         assert.are.same("change", hunk.kind)
-        assert.are.same({ 0, 9 }, hunk.pos)
+        assert.are.same({ 0, 6 }, hunk.pos)
         assert.are.same(2, #hunk.extmarks)
         assert.are.same({
           row = 0,
@@ -233,7 +233,7 @@ describe("diff", function()
         local hunk = diff.hunks[1]
         assert.are.same(true, hunk.inline)
         assert.are.same("change", hunk.kind)
-        assert.are.same({ 0, 13 }, hunk.pos)
+        assert.are.same({ 0, 12 }, hunk.pos)
         assert.are.same(2, #hunk.extmarks)
         assert.are.same({
           row = 0,

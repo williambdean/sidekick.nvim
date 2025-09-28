@@ -224,7 +224,6 @@ function M.diff_inline(diff, from_idx, to_idx)
     if bc > 0 then
       insert_len = insert_len + b_index[bi + bc - 1].end_col - b_index[bi].col
       local col = ac > 0 and a_index[ai + ac - 1].end_col or a_from.end_col
-      h.pos[2] = ac > 0 and col or math.max(col - 1, 0)
       table.insert(h.extmarks, {
         row = row,
         col = col,

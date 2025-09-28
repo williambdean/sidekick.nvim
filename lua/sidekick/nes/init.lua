@@ -147,22 +147,26 @@ end
 function M._jump(pos)
   pos = vim.deepcopy(pos)
 
+  local win = vim.api.nvim_get_current_win()
+
   -- check if we need to jump
   pos[1] = pos[1] + 1
-  local cursor = vim.api.nvim_win_get_cursor(0)
+  local cursor = vim.api.nvim_win_get_cursor(win)
   if cursor[1] == pos[1] and cursor[2] == pos[2] then
     return false
   end
 
   -- schedule jump
   vim.schedule(function()
+    if not vim.api.nvim_win_is_valid(win) then
+      return
+    end
     -- add to jump list
     if Config.jump.jumplist then
       vim.cmd("normal! m'")
     end
-    vim.api.nvim_win_set_cursor(0, pos)
+    vim.api.nvim_win_set_cursor(win, pos)
   end)
-
   return true
 end
 
