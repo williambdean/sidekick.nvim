@@ -10,10 +10,12 @@ M.patches = {} ---@type table<string, sidekick.NesEdit>
 function M.setup()
   local commands = {
     NesAdd = M.nes_add,
+    NesDel = M.nes_del,
     NesPatch = M.nes_patch,
     NesEdit = function()
       vim.cmd.edit(patch_file)
     end,
+    NesInspect = M.nes_inspect,
   }
   for name, command in pairs(commands) do
     vim.api.nvim_create_user_command("SidekickDebug" .. name, command, {})
@@ -36,16 +38,40 @@ end
 
 function M.nes_add()
   M.nes_load()
-  local edit = require("sidekick.nes")._edits[1]
+  local edit = M.nes_inspect(false)
   if edit then
-    edit.diff = nil
-    edit.command = nil
     M.patches[vim.api.nvim_buf_get_name(0)] = edit
     M.nes_save()
     Util.info("Sidekick nes patch added")
   else
     Util.error("No edit found?")
   end
+end
+
+function M.nes_del()
+  M.nes_load()
+  local name = vim.api.nvim_buf_get_name(0)
+  if M.patches[name] then
+    M.patches[name] = nil
+    M.nes_save()
+    Util.info("Sidekick nes patch removed")
+  else
+    Util.error("No patch found for this file")
+  end
+end
+
+---@param show boolean?
+function M.nes_inspect(show)
+  local edit = require("sidekick.nes")._edits[1]
+  if not edit then
+    return
+  end
+  edit.diff = nil
+  edit.command = nil
+  if show ~= false then
+    Snacks.debug.inspect(edit)
+  end
+  return edit
 end
 
 function M.nes_patch()
