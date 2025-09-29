@@ -94,20 +94,34 @@ function M.select_tool(opts)
     on_select(tools[1])
     return
   end
-
-  vim.ui.select(tools, {
+  ---@type snacks.picker.ui_select.Opts
+  local select_opts = {
     prompt = "Select CLI tool:",
+    kind = "snacks",
     ---@param tool sidekick.cli.Tool
-    format_item = function(tool)
-      local parts = { tool.name }
-      if not tool.installed then
-        parts[#parts + 1] = "[not installed]"
-      elseif tool.running then
-        parts[#parts + 1] = "[running]"
+    format_item = function(tool, is_snacks)
+      local sw = vim.api.nvim_strwidth
+      local parts = {} ---@type snacks.picker.Highlight[]
+      parts[#parts + 1] = { tool.installed and "✅" or "❌" }
+      parts[#parts + 1] = { " " }
+      parts[#parts + 1] = { tool.name }
+      local len = sw(tool.name) + 2
+      if tool.running then
+        parts[#parts + 1] = { string.rep(" ", 12 - len) }
+        parts[#parts + 1] = { "[running]", "Special" }
+        len = 12 + sw("[running]")
       end
-      return table.concat(parts, " ")
+      if tool.url then
+        parts[#parts + 1] = { string.rep(" ", 22 - len) }
+        parts[#parts + 1] = { tool.url, "Comment" }
+      end
+      return is_snacks and parts or table.concat(vim.tbl_map(function(p)
+        return p[1]
+      end, parts))
     end,
-  }, on_select)
+  }
+
+  vim.ui.select(tools, select_opts, on_select)
 end
 
 ---@param t sidekick.cli.Terminal|sidekick.cli.Tool
@@ -294,25 +308,78 @@ function M.ask(opts)
 end
 
 function M.select_prompt()
-  local ok = pcall(require, "snacks.picker")
-  if ok then
-    local snacks = require("snacks")
-    snacks.picker.sources.sidekick_prompts = require("sidekick.cli.snacks").prompts
-    snacks.picker.sidekick_prompts()
-    return
+  local prompts = vim.tbl_keys(Config.cli.prompts) ---@type string[]
+  table.sort(prompts)
+  local ok, Snacks = pcall(require, "snacks")
+
+  local items = {} ---@type snacks.picker.finder.Item[]
+  for _, name in ipairs(prompts) do
+    local rendered = M.render_prompt({ prompt = name }) or ""
+    local extmarks = {} ---@type snacks.picker.Extmark[]
+    if ok and Snacks then
+      local lines = vim.split(rendered, "\n", { plain = true })
+      for l, line in ipairs(lines) do
+        local hls = { { line } } ---@type snacks.picker.Highlight[]
+        Snacks.picker.highlight.markdown(hls)
+        Snacks.picker.highlight.highlight(hls, {
+          ["(@)[^:]+"] = "Bold",
+          ["@([^:]+)"] = "SnacksPickerDir",
+          ["@[^:]+(:)"] = "SnacksPickerDelim",
+          ["@[^:]+:([^:]+)"] = "SnacksPickerRow",
+          ["@[^:]+:[^:]+(:)"] = "SnacksPickerDelim",
+          ["@[^:]+:[^:]+:([^:]+)"] = "SnacksPickerCol",
+          ["%[WARN%]"] = "DiagnosticVirtualTextWarn",
+          ["%[ERROR%]"] = "DiagnosticVirtualTextError",
+          ["%[HINT%]"] = "DiagnosticVirtualTextHint",
+          ["%[INFO%]"] = "DiagnosticVirtualTextInfo",
+          ["%[OK%]"] = "DiagnosticVirtualTextOk",
+        })
+        for _, hl in ipairs(hls) do
+          if not hl[1] then
+            ---@cast hl snacks.picker.Extmark
+            hl.row = l
+            extmarks[#extmarks + 1] = hl
+          end
+        end
+      end
+    end
+    ---@class sidekick.select_prompt.Item: snacks.picker.finder.Item
+    items[#items + 1] = {
+      text = name,
+      value = name,
+      prompt = name,
+      preview = {
+        text = rendered,
+        extmarks = extmarks,
+      },
+    }
   end
-  local prompts = vim.tbl_keys(Config.cli.prompts)
-  vim.ui.select(prompts, {
+
+  ---@type snacks.picker.ui_select.Opts
+  local opts = {
     prompt = "Select a prompt",
-    format_item = function(prompt)
-      return ("[%s] %s"):format(prompt, M.render_prompt({ prompt = prompt }))
+    ---@param item sidekick.select_prompt.Item
+    format_item = function(item, is_snacks)
+      if is_snacks then
+        return { { item.text, "Special" } }
+      end
+      return ("[%s] %s"):format(item.text, item.prompt)
     end,
-  }, function(choice)
+    picker = {
+      preview = "preview",
+      layout = {
+        preset = "vscode",
+        preview = true,
+      },
+    },
+  }
+
+  ---@param choice? sidekick.select_prompt.Item
+  vim.ui.select(items, opts, function(choice)
     if choice then
-      M.ask({ prompt = choice })
+      M.ask({ prompt = choice.prompt })
     end
   end)
-  -- Snacks.picker.
 end
 
 return M
