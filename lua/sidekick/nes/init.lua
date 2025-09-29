@@ -206,7 +206,9 @@ function M.apply()
 
     -- let the LSP server know
     for _, edit in ipairs(edits) do
-      client:exec_cmd(edit.command, { bufnr = buf })
+      if edit.command then
+        client:exec_cmd(edit.command, { bufnr = buf })
+      end
     end
 
     -- jump to end of last edit
