@@ -1,8 +1,9 @@
 # 🤖 `sidekick.nvim`
 
-**sidekick.nvim** is your Neovim AI sidekick. It combines Copilot LSP's "Next Edit
-Suggestions" with split terminals for any AI CLI, so you can review inline edits,
-ask follow-up questions, and run fixes from the same buffer and cursor context.
+**sidekick.nvim** is your Neovim AI sidekick that integrates Copilot LSP's
+"Next Edit Suggestions" with a built-in terminal for any AI CLI.
+Review and apply diffs, chat with AI assistants, and streamline your coding,
+without leaving your editor.
 
 > [!WARNING]  
 > **Status**: Early preview. The API is still settling; expect breaking changes while
@@ -12,13 +13,25 @@ ask follow-up questions, and run fixes from the same buffer and cursor context.
 
 ## ✨ Features
 
-- 🪄 **Auto-fetch suggestions** when you pause typing or move the cursor—no manual trigger needed.
-- 🎨 **Inline and block diffs** with Treesitter colour, whitespace highlighting, and configurable token granularity.
-- 🧭 **Jump-through workflow** via `nes_jump`/`nes_jump_or_apply` to review edits hunk by hunk or accept them all at once.
-- 🧼 **Smart clearing hooks** that retract pending edits on insert, save, or `<Esc>` so buffers stay tidy.
-- 📊 **Statusline helpers** through `sidekick.status.get()` for connection state, request progress, and preview text.
-- 🔌 **Plugin-friendly API** including debounce utilities, virtual text helpers, and optional jumplist integration.
-- 💬 **AI CLI terminals** that capture cursor position, diagnostics, and prompts so you can chat with local tools (Claude, Copilot CLI, Gemini, Grok, Qwen, etc.) without leaving Neovim.
+- **🤖 Next Edit Suggestions (NES) powered by Copilot LSP**
+  - 🪄 **Automatic Suggestions**: Fetches suggestions automatically when you pause typing or move the cursor.
+  - 🎨 **Rich Diffs**: Visualizes changes with inline and block-level diffs, featuring Treesitter-based syntax highlighting.
+    granular diffing down to the word or character level.
+  - 🧭 **Hunk-by-Hunk Navigation**: Jump through edits to review them one by one before applying.
+  - 📊 **Statusline Integration**: Shows Copilot LSP's status, request progress, and preview text in your statusline.
+
+- **💬 Integrated AI CLI Terminal**
+  - 🚀 **Direct Access to AI CLIs**: Interact with your favorite AI command-line tools without leaving Neovim.
+  - 📦 **Pre-configured for Popular Tools**: Out-of-the-box support for Claude, Gemini, Grok, Codex, Copilot CLI, and more.
+  - ✨ **Context-Aware Prompts**: Automatically include file content, cursor position, and diagnostics in your prompts.
+  - 📝 **Prompt Library**: A library of pre-defined prompts for common tasks like explaining code, fixing issues, or writing tests.
+  - 🔄 **Session Persistence**: Keep your CLI sessions alive with `tmux` and `zellij` integration.
+  - 📂 **Automatic File Watching**: Automatically reloads files in Neovim when they are modified by AI tools.
+
+- **🔌 Extensible and Customizable**
+  - ⚙️ **Flexible Configuration**: Fine-tune every aspect of the plugin to your liking.
+  - 🧩 **Plugin-Friendly API**: A rich API for integrating with other plugins and building custom workflows.
+  - 🎨 **Customizable UI**: Change the appearance of diffs, signs, and more.
 
 ## 📋 Requirements
 
