@@ -81,6 +81,7 @@ function M:start()
     ---@diagnostic disable-next-line: no-unknown
     vim.bo[self.buf][k] = v
   end
+  vim.b[self.buf].sidekick_cli = self.tool.name
 
   vim.api.nvim_create_autocmd("BufEnter", {
     group = self.group,
