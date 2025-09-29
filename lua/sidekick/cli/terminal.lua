@@ -116,6 +116,8 @@ function M:start()
     end
   end
 
+  self:open_win()
+
   vim.api.nvim_create_autocmd("BufEnter", {
     group = self.group,
     buffer = self.buf,
@@ -168,6 +170,38 @@ function M:start()
   end
 end
 
+function M:open_win()
+  if self:is_open() or not self.buf then
+    return
+  end
+  vim.api.nvim_win_call(0, function()
+    local wincmd = {
+      left = "H",
+      bottom = "J",
+      top = "K",
+      right = "L",
+    }
+
+    local cmd = ("%s sbuffer %d | wincmd %s"):format(
+      Config.cli.win.layout,
+      self.buf,
+      wincmd[Config.cli.win.position] or "L"
+    )
+
+    vim.cmd(cmd)
+    self.win = vim.api.nvim_get_current_win()
+    if Config.cli.win.layout == "vertical" then
+      vim.api.nvim_win_set_width(self.win, Config.cli.win.width)
+    else
+      vim.api.nvim_win_set_height(self.win, Config.cli.win.height)
+    end
+  end)
+  for k, v in pairs(merge(vim.deepcopy(wo), Config.cli.win.wo)) do
+    ---@diagnostic disable-next-line: no-unknown
+    vim.wo[self.win][k] = v
+  end
+end
+
 function M:focus()
   self:show()
   if not self:is_running() then
@@ -193,34 +227,7 @@ function M:show()
   if not self:is_running() then
     return
   end
-  if not self:is_open() then
-    vim.api.nvim_win_call(0, function()
-      local wincmd = {
-        left = "H",
-        bottom = "J",
-        top = "K",
-        right = "L",
-      }
-
-      local cmd = ("%s sbuffer %d | wincmd %s"):format(
-        Config.cli.win.layout,
-        self.buf,
-        wincmd[Config.cli.win.position] or "L"
-      )
-
-      vim.cmd(cmd)
-      self.win = vim.api.nvim_get_current_win()
-      if Config.cli.win.layout == "vertical" then
-        vim.api.nvim_win_set_width(self.win, Config.cli.win.width)
-      else
-        vim.api.nvim_win_set_height(self.win, Config.cli.win.height)
-      end
-    end)
-    for k, v in pairs(merge(vim.deepcopy(wo), Config.cli.win.wo)) do
-      ---@diagnostic disable-next-line: no-unknown
-      vim.wo[self.win][k] = v
-    end
-  end
+  self:open_win()
   return self
 end
 
