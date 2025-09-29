@@ -1,6 +1,47 @@
----@class sidekick.cli.Context
----@field buf integer
 local M = {}
+
+---@class sidekick.context.ctx
+---@field buf integer
+---@field win integer
+
+---@class sidekick.context.location.Opts
+local location_defaults = {
+  row = true,
+  col = true,
+  range = true,
+}
+
+---@class sidekick.context.diagnostics.Opts: vim.diagnostic.GetOpts
+local diagnostics_defaults = {
+  all = false,
+}
+
+---@class sidekick.context.Opts
+---@field buf? number
+---@field diagnostics? sidekick.context.diagnostics.Opts|boolean
+---@field location? sidekick.context.location.Opts|boolean
+local context_defaults = {
+  diagnostics = nil,
+  location = {},
+}
+
+---@param opts sidekick.context.Opts
+function M.get(opts)
+  opts = vim.tbl_extend("force", {}, context_defaults, opts or {})
+  local buf = vim.api.nvim_get_current_buf()
+  if vim.b[buf].sidekick_cli then
+    buf = vim.api.nvim_win_get_buf(vim.fn.win_getid(vim.fn.winnr("#")))
+  end
+  -- dd("context for " .. vim.api.nvim_buf_get_name(buf), opts)
+  local ret = {} ---@type string[]
+  if opts.location then
+    ret[#ret + 1] = M.get_location(buf, opts.location == true and {} or opts.location)
+  end
+  if opts.diagnostics then
+    ret[#ret + 1] = M.get_diagnostics(buf, opts.diagnostics == true and {} or opts.diagnostics)
+  end
+  return ret
+end
 
 local CTRL_V = vim.keycode("<C-V>")
 
@@ -63,16 +104,18 @@ function M.format_location(opts)
 end
 
 ---@param buf? integer
-function M.get_location(buf)
+---@param opts? sidekick.context.location.Opts
+function M.get_location(buf, opts)
+  opts = vim.tbl_extend("force", {}, location_defaults, opts or {})
   buf = buf or vim.api.nvim_get_current_buf()
   ---@type sidekick.context.Location
   local ctx = {
     buf = buf,
-    row = vim.fn.line("."),
-    col = vim.fn.col(".") - 1,
+    row = opts.row and vim.fn.line(".") or nil,
+    col = opts.row and opts.col and vim.fn.col(".") - 1 or nil,
   }
 
-  local mode = vim.fn.mode()
+  local mode = opts.range and vim.fn.mode() or ""
   if mode:match("^[vV]$") or mode == CTRL_V then
     vim.cmd("normal! " .. mode)
 
@@ -88,10 +131,12 @@ function M.get_location(buf)
 end
 
 ---@param buf? integer
----@param opts? vim.diagnostic.GetOpts
+---@param opts? sidekick.context.diagnostics.Opts
 function M.get_diagnostics(buf, opts)
+  opts = vim.tbl_extend("force", {}, diagnostics_defaults, opts or {})
+
   buf = buf or vim.api.nvim_get_current_buf()
-  local diags = vim.diagnostic.get(buf, opts)
+  local diags = vim.diagnostic.get(opts.all == false and buf or nil, opts)
   if #diags == 0 then
     return
   end
@@ -113,7 +158,7 @@ function M.get_diagnostics(buf, opts)
       severity,
       d.message:gsub("\n", " "),
       M.format_location({
-        buf = buf,
+        buf = d.bufnr,
         range = {
           from = { lnum, col },
           to = { end_lnum, end_col },

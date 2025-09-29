@@ -4,10 +4,8 @@ local Util = require("sidekick.util")
 
 local M = {}
 
----@class sidekick.Prompt
+---@class sidekick.Prompt: sidekick.context.Opts
 ---@field msg? string
----@field location? boolean include the buffer location (defaults to true)
----@field diagnostics? boolean include the buffer diagnostics (defaults to false)
 
 ---@alias sidekick.Prompt.spec sidekick.Prompt | string | fun(): (sidekick.Prompt|string)
 
@@ -283,14 +281,7 @@ function M.render_prompt(opts)
   local msg = {} ---@type string[]
 
   local Context = require("sidekick.cli.context")
-
-  if opts.location ~= false then
-    msg[#msg + 1] = Context.get_location()
-  end
-
-  if opts.diagnostics then
-    msg[#msg + 1] = Context.get_diagnostics()
-  end
+  vim.list_extend(msg, Context.get(opts))
 
   msg[#msg + 1] = opts.msg or ""
 
@@ -317,7 +308,8 @@ function M.ask(opts)
   M.show(opts)
 end
 
-function M.select_prompt()
+---@param cb? fun(prompt: string)
+function M.select_prompt(cb)
   local prompts = vim.tbl_keys(Config.cli.prompts) ---@type string[]
   table.sort(prompts)
   local ok, Snacks = pcall(require, "snacks")
@@ -387,6 +379,9 @@ function M.select_prompt()
   ---@param choice? sidekick.select_prompt.Item
   vim.ui.select(items, opts, function(choice)
     if choice then
+      if cb then
+        return cb(choice.prompt)
+      end
       M.ask({ prompt = choice.prompt })
     end
   end)
