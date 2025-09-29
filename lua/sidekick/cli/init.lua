@@ -45,7 +45,10 @@ local M = {}
 ---@field prompt? string
 ---@field submit? boolean
 
+--- Keymap options similar to `vim.keymap.set` and `lazy.nvim` mappings
 ---@class sidekick.cli.Keymap: vim.keymap.set.Opts
+---@field [1] string keymap
+---@field [2] string|sidekick.cli.Action
 ---@field mode? string|string[]
 
 ---@param tool sidekick.cli.Tool
@@ -312,7 +315,7 @@ function M.ask(opts)
   M.show(opts)
 end
 
----@param cb? fun(prompt: string)
+---@param cb? fun(prompt?: string)
 function M.select_prompt(cb)
   local prompts = vim.tbl_keys(Config.cli.prompts) ---@type string[]
   table.sort(prompts)
@@ -382,10 +385,10 @@ function M.select_prompt(cb)
 
   ---@param choice? sidekick.select_prompt.Item
   vim.ui.select(items, opts, function(choice)
+    if cb then
+      return cb(choice and choice.prompt or nil)
+    end
     if choice then
-      if cb then
-        return cb(choice.prompt)
-      end
       M.ask({ prompt = choice.prompt })
     end
   end)

@@ -83,6 +83,39 @@ function M:start()
   end
   vim.b[self.buf].sidekick_cli = self.tool.name
 
+  local Actions = require("sidekick.cli.actions")
+
+  for name, km in pairs(Config.cli.win.keys) do
+    if type(km) == "table" then
+      local lhs, rhs = km[1], km[2] or name
+      ---@type sidekick.cli.Action?
+      local action = type(rhs) == "function" and rhs or nil
+      if type(rhs) == "string" then
+        action = Actions[rhs] -- global actions
+          or M[rhs] -- terminal methods
+          or (vim.fn.exists(":" .. rhs) > 0 and function()
+            vim.cmd[rhs]()
+          end)
+      end
+
+      if not lhs then
+        Util.error(("No lhs for keymap `%s`"):format(name))
+      elseif not action then
+        Util.error(("No action for keymap `%s`: %s"):format(name, tostring(rhs)))
+      else
+        local km_opts = vim.deepcopy(km) ---@type vim.keymap.set.Opts
+        ---@diagnostic disable-next-line: inject-field, no-unknown
+        km_opts.mode, km_opts[1], km_opts[2] = nil, nil, nil
+        km_opts.silent = km_opts.silent ~= false
+        km_opts.buffer = self.buf
+        km_opts.desc = km_opts.desc or ("Sidekick: %s"):format(name:gsub("^%l", string.upper))
+        vim.keymap.set(km.mode or "t", lhs, function()
+          action(self)
+        end, km_opts)
+      end
+    end
+  end
+
   vim.api.nvim_create_autocmd("BufEnter", {
     group = self.group,
     buffer = self.buf,
