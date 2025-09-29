@@ -34,6 +34,12 @@ function M.debounce(fn, ms)
   end
 end
 
+---@param str string
+function M.width(str)
+  str = str:gsub("\t", string.rep(" ", vim.o.tabstop))
+  return vim.api.nvim_strwidth(str)
+end
+
 --- UTF-8 aware word splitting. See |keyword|
 ---@param str string
 function M.split_words(str)
