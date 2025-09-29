@@ -14,6 +14,7 @@ layout {
       {args}
    }
 }
+session_serialization false
 ]]
 
 ---@return sidekick.cli.Tool.spec?
