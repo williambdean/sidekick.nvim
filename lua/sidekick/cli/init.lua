@@ -232,6 +232,20 @@ function M.toggle(opts)
   end, { filter = { name = opts.name }, create = true })
 end
 
+--- Toggle focus of the terminal window if it is already open
+---@param opts? sidekick.cli.Show
+---@overload fun(name: string)
+function M.focus(opts)
+  opts = type(opts) == "string" and { name = opts } or opts or {}
+  M.with(function(t)
+    if t:is_open() and vim.api.nvim_get_current_win() == t.win then
+      vim.cmd.wincmd("p")
+    else
+      t:focus()
+    end
+  end, { filter = { name = opts.name }, create = true })
+end
+
 ---@param opts? sidekick.cli.Hide
 ---@overload fun(name: string)
 function M.hide(opts)
