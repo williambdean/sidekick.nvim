@@ -19,19 +19,36 @@ function M.render(edit)
   local from, to = edit.from, edit.to
 
   local signs = Config.signs.enabled
+
+  -- Add the sign at the first position
   vim.api.nvim_buf_set_extmark(edit.buf, Config.ns, from[1], 0, {
-    end_line = to[1] + 1,
-    hl_group = "SidekickDiffContext",
-    hl_eol = true,
     sign_text = signs and Config.signs.icon or nil,
     sign_hl_group = signs and "SidekickSign" or nil,
   })
-
+  local rows = {} ---@type table<number, true>
   for _, hunk in ipairs(diff.hunks) do
+    if not hunk.inline then
+      for r = hunk.pos[1], hunk.pos[1] + hunk.cover - 1 do
+        rows[r] = true
+      end
+    end
     for _, extmark in ipairs(hunk.extmarks) do
       local opts = vim.tbl_extend("force", {}, extmark) ---@type sidekick.Extmark
       opts.row, opts.col = nil, nil
       vim.api.nvim_buf_set_extmark(edit.buf, Config.ns, extmark.row, extmark.col, opts)
+    end
+  end
+
+  -- Only add the context bg for lines not yet touched by the rest including inline
+  -- This is to fix an issue with extmarks otherwise not displayig correctly
+  -- Additionally line_hl_group seems broken in some cases, so don't use that.
+  for r = from[1], to[1] do
+    if not rows[r] then
+      vim.api.nvim_buf_set_extmark(edit.buf, Config.ns, r, 0, {
+        end_line = r + 1,
+        hl_group = "SidekickDiffContext",
+        hl_eol = true,
+      })
     end
   end
 end

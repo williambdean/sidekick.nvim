@@ -1,3 +1,5 @@
+local Util = require("sidekick.util")
+
 local M = {}
 
 ---@alias sidekick.TSHighlight string | { [1]:string, [2]:string }
@@ -96,32 +98,77 @@ end
 
 --- Highlight leading/trailing whitespace and EOL in virtual lines
 ---@param virtual_lines sidekick.TSVirtualLines
----@param opts? {leading?:string, trailing?:string}
-function M.highlight_ws(virtual_lines, opts)
+---@param opts? {leading?:string, trailing?:string, block?:string, width?:number}
+function M.highlight_block(virtual_lines, opts)
+  if #virtual_lines == 0 then
+    return virtual_lines
+  end
   opts = opts or {}
-  for _, vt in ipairs(virtual_lines) do
+  local indent = -1
+  local len = 0
+  local ts = vim.o.tabstop
+  local lengths = {} ---@type table<number, number>
+
+  ---@param str string
+  local function sw(str)
+    return vim.api.nvim_strwidth(str)
+  end
+
+  for l, vt in ipairs(virtual_lines) do
+    local line_len = 0
+    for c, chunk in ipairs(vt) do
+      -- normalize tabs
+      chunk[1] = chunk[1]:gsub("\t", string.rep(" ", ts))
+      line_len = line_len + sw(chunk[1])
+      if c == 1 then
+        local ws = chunk[1]:match("^%s*") ---@type string?
+        if ws then
+          indent = indent == -1 and #ws or math.min(indent, #ws)
+        end
+      end
+    end
+    lengths[l] = line_len
+    len = math.max(len, line_len)
+  end
+  len = opts.width or len
+
+  for l, vt in ipairs(virtual_lines) do
+    local line_len = lengths[l]
+    if opts.block and line_len < len then
+      table.insert(vt, { string.rep(" ", len - line_len), opts.block })
+    end
     if opts.trailing then
       table.insert(vt, { string.rep(" ", vim.o.columns), opts.trailing })
     end
-    if opts.leading then
+    if opts.leading and indent > 0 then
       local chunk = vt[1]
-      if chunk then
-        local text = chunk[1]
-        local ws = text:match("^%s+")
-        if ws then
-          local chunk_hl = chunk[2]
-          chunk[1] = ws
-          chunk[2] = opts.leading
-          if #ws < #text then
-            table.insert(vt, 2, { text:sub(#ws + 1), chunk_hl })
-          end
-        else
-          chunk[2] = nil
-        end
+      chunk[1] = chunk[1]:sub(indent + 1)
+      if #chunk[1] == 0 then
+        vt[1] = { string.rep(" ", indent), opts.leading }
+      else
+        table.insert(vt, 1, { string.rep(" ", indent), opts.leading })
       end
     end
   end
   return virtual_lines
+end
+
+---@param vt sidekick.TSVirtualText
+function M.virt_text_width(vt)
+  local ret = 0
+  for _, chunk in ipairs(vt) do
+    ret = ret + Util.width(chunk[1])
+  end
+  return ret
+end
+
+---@param vl sidekick.TSVirtualLines
+function M.virt_lines_width(vl)
+  local ret = 0
+  for _, vt in ipairs(vl) do
+    ret = math.max(ret, M.virt_text_width(vt))
+  end
+  return ret
 end
 
 return M

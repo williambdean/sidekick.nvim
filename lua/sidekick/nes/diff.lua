@@ -41,6 +41,7 @@ local DIFF_INLINE_OPTS = {
 
 ---@class sidekick.diff.Hunk
 ---@field pos sidekick.Pos
+---@field cover integer the number of lines covered in the "from" text
 ---@field kind "add" | "delete" | "change"
 ---@field inline? boolean
 ---@field extmarks sidekick.Extmark[]
@@ -93,7 +94,6 @@ function M.diff(edit)
       virt_lines = TS.get_virtual_lines(to_lines, {
         ft = vim.bo[edit.buf].filetype,
         bg = "SidekickDiffAdd",
-        -- ws = "SidekickDiffContext",
       }),
     },
   }
@@ -107,6 +107,10 @@ end
 ---@param diff sidekick.Diff
 function M.diff_lines(diff)
   local hunks = M._diff(diff.from.lines, diff.to.lines, DIFF_OPTS)
+  local dels = {} ---@type table<integer, {hunk: sidekick.diff.Hunk}>
+  local adds = {} ---@type table<integer, {hunk: sidekick.diff.Hunk, virt_lines: sidekick.TSVirtualLines}>
+
+  local width = 0
   for _, hunk in ipairs(hunks) do
     local ai, ac, bi, bc = unpack(hunk)
 
@@ -130,30 +134,46 @@ function M.diff_lines(diff)
       local h = {
         kind = ac > 0 and bc > 0 and "change" or ac > 0 and "delete" or "add",
         pos = { row, 0 },
+        cover = ac,
         extmarks = {},
       }
       table.insert(diff.hunks, h)
       if ac > 0 then
-        table.insert(h.extmarks, {
-          row = row,
-          col = 0,
-          end_line = row + ac - 1,
-          end_col = #diff.from.lines[ai + ac - 1],
-          hl_group = "SidekickDiffDelete",
-        })
+        for l = 0, ac - 1 do
+          dels[row + l] = { hunk = h }
+          width = math.max(width, Util.width(diff.from.lines[ai + l] or ""))
+        end
       end
       if bc > 0 then
-        table.insert(h.extmarks, {
-          row = row + (ac > 0 and ac - 1 or 0),
-          col = 0,
-          hl_eol = true,
-          virt_lines = TS.highlight_ws(vim.list_slice(diff.to.virt_lines, bi, bi + bc - 1), {
-            leading = "SidekickDiffContext",
-            trailing = "SidekickDiffContext",
-          }),
-        })
+        local virt_lines = vim.list_slice(diff.to.virt_lines, bi, bi + bc - 1)
+        width = math.max(width, TS.virt_lines_width(virt_lines))
+        adds[row + (ac > 0 and ac - 1 or 0)] = { hunk = h, virt_lines = virt_lines }
       end
     end
+  end
+
+  for row, info in pairs(dels) do
+    table.insert(info.hunk.extmarks, {
+      row = row,
+      col = 0,
+      virt_text_win_col = width + 1,
+      virt_text = { { string.rep(" ", vim.o.columns), "SidekickDiffContext" } },
+      line_hl_group = "SidekickDiffDelete",
+    })
+  end
+
+  for row, info in pairs(adds) do
+    table.insert(info.hunk.extmarks, {
+      row = row,
+      col = 0,
+      hl_eol = true,
+      virt_lines = TS.highlight_block(info.virt_lines, {
+        leading = "SidekickDiffContext",
+        trailing = "SidekickDiffContext",
+        block = "SidekickDiffAdd",
+        width = width + 1,
+      }),
+    })
   end
 end
 
@@ -203,9 +223,11 @@ function M.diff_inline(diff, from_idx, to_idx)
   for _, token_hunk in ipairs(hunks) do
     local ai, ac, bi, bc = unpack(token_hunk)
     local a_from = a_index[ai]
+    ---@type sidekick.diff.Hunk
     local h = {
       kind = ac > 0 and bc > 0 and "change" or ac > 0 and "delete" or "add",
       pos = { row, a_from.col },
+      cover = 1,
       inline = true,
       extmarks = {},
     }
@@ -228,7 +250,6 @@ function M.diff_inline(diff, from_idx, to_idx)
         row = row,
         col = col,
         virt_text_pos = "inline",
-        priority = 500,
         virt_text = vim.list_slice(b_vl, bi, bi + bc - 1),
       })
     end
