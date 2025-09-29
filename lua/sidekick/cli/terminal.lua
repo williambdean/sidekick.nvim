@@ -154,9 +154,9 @@ function M:start()
   vim.api.nvim_create_autocmd("TermClose", {
     group = self.group,
     buffer = self.buf,
-    callback = function(ev)
-      if vim.uv.hrtime() - self.atime < 1e9 then
-        -- if closed within 2 seconds of last focus, assume it was user-initiated
+    callback = function()
+      -- don't close if the terminal failed to start
+      if vim.v.event.status ~= 0 and vim.uv.hrtime() - self.atime < 3e9 then
         return
       end
       vim.schedule(function()
