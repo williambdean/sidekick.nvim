@@ -8,7 +8,7 @@ ask follow-up questions, and run fixes from the same buffer and cursor context.
 > **Status**: Early preview. The API is still settling; expect breaking changes while
 > Copilot's inline edit endpoints evolve.
 
-<img width="1474" height="971" alt="image" src="https://github.com/user-attachments/assets/6f4ff1ad-aa47-4219-8a01-69bdf29e0d8a" />
+<img width="2311" height="1396" alt="image" src="https://github.com/user-attachments/assets/63a33610-9a8e-45e2-bbd0-b7e3a4fde621" />
 
 ## ✨ Features
 
