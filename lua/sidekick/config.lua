@@ -61,6 +61,12 @@ local defaults = {
         -- },
       },
     },
+    ---@class sidekick.cli.Mux
+    ---@field backend? "tmux"|"zellij" Multiplexer backend to persist CLI sessions
+    mux = {
+      backend = "zellij",
+      enabled = false,
+    },
     ---@type table<string, sidekick.cli.Tool.spec>
     tools = {
       claude = { cmd = { "claude" }, url = "https://github.com/anthropics/claude-code" },

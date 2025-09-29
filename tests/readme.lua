@@ -2,6 +2,12 @@ local base = {
   "folke/sidekick.nvim",
   opts = {
     -- add any options here
+    cli = {
+      mux = {
+        backend = "zellij",
+        enabled = true,
+      },
+    },
   },
   keys = {
     {
@@ -14,6 +20,14 @@ local base = {
       end,
       expr = true,
       desc = "Goto/Apply Next Edit Suggestion",
+    },
+    {
+      "<c-.>",
+      function()
+        require("sidekick.cli").focus()
+      end,
+      desc = "Sidekick Switch Focus",
+      mode = { "n", "v" },
     },
     {
       "<leader>aa",

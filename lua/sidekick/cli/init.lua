@@ -18,6 +18,7 @@ local M = {}
 ---@field name string
 ---@field installed boolean
 ---@field running boolean
+---@field mux boolean
 
 ---@class sidekick.cli.Filter
 ---@field name? string
@@ -107,7 +108,12 @@ function M.select_tool(opts)
       parts[#parts + 1] = { " " }
       parts[#parts + 1] = { tool.name }
       local len = sw(tool.name) + 2
-      if tool.running then
+      if tool.mux then
+        local backend = ("[%s]"):format(Config.cli.mux.backend)
+        parts[#parts + 1] = { string.rep(" ", 12 - len) }
+        parts[#parts + 1] = { backend, "Special" }
+        len = 12 + sw(backend)
+      elseif tool.running then
         parts[#parts + 1] = { string.rep(" ", 12 - len) }
         parts[#parts + 1] = { "[running]", "Special" }
         len = 12 + sw("[running]")
@@ -140,15 +146,22 @@ end
 ---@param filter? sidekick.cli.Filter
 ---@return sidekick.cli.Tool[]
 function M.get_tools(filter)
+  local Mux = require("sidekick.cli.mux")
   local all = {} ---@type sidekick.cli.Tool[]
+
+  local sessions = Mux.sessions()
+
   for name, tool in pairs(Config.cli.tools) do
     ---@cast tool sidekick.cli.Tool
     tool.name = name
     tool.installed = vim.fn.executable(tool.cmd[1]) == 1
     local terminal = Terminal.get(name)
+    local session = Mux.get_session(tool)
     tool.running = terminal and terminal:is_running()
+    tool.mux = sessions[session] ~= nil
     all[#all + 1] = tool
   end
+
   ---@type sidekick.cli.Tool[]
   ---@param t sidekick.cli.Tool
   local ret = vim.tbl_filter(function(t)
@@ -160,6 +173,9 @@ function M.get_tools(filter)
     end
     if a.running ~= b.running then
       return a.running
+    end
+    if a.mux ~= b.mux then
+      return a.mux
     end
     return a.name < b.name
   end)

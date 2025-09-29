@@ -1,4 +1,5 @@
 local Config = require("sidekick.config")
+local Mux = require("sidekick.cli.mux")
 local Util = require("sidekick.util")
 
 ---@class sidekick.cli.Terminal
@@ -12,6 +13,7 @@ local Util = require("sidekick.util")
 ---@field job? integer
 ---@field buf? integer
 ---@field win? integer
+---@field mux? sidekick.cli.Muxer
 local M = {}
 M.__index = M
 
@@ -41,7 +43,7 @@ local wo = {
   signcolumn = "no",
   spell = false,
   winbar = "",
-  statuscolumn = "",
+  statuscolumn = " ",
   wrap = false,
   sidescrolloff = 0,
 }
@@ -72,10 +74,28 @@ function M:is_running()
   return self.job and vim.fn.jobwait({ self.job }, 0)[1] == -1
 end
 
+function M:buf_valid()
+  return self.buf and vim.api.nvim_buf_is_valid(self.buf)
+end
+
+function M:win_valid()
+  return self.win and vim.api.nvim_win_is_valid(self.win)
+end
+
 function M:start()
   if self:is_running() then
     return
   end
+
+  if Config.cli.mux.enabled then
+    self.mux = Mux.new(self.tool)
+    if not self.mux then
+      return
+    end
+  end
+
+  local cmd = self.mux and self.mux:cmd() or self.tool
+
   self.buf = vim.api.nvim_create_buf(false, true)
   for k, v in pairs(merge(vim.deepcopy(bo), Config.cli.win.bo)) do
     ---@diagnostic disable-next-line: no-unknown
@@ -142,14 +162,23 @@ function M:start()
   })
 
   vim.api.nvim_buf_call(self.buf, function()
-    self.job = vim.fn.jobstart(self.tool.cmd, {
+    local env = vim.tbl_extend("force", {}, vim.uv.os_environ(), self.tool.env or {}, cmd.env or {})
+    -- add support for clearing env vars
+    for k, v in pairs(env) do
+      if v == false then
+        env[k] = nil
+      end
+    end
+    self.job = vim.fn.jobstart(cmd.cmd, {
       term = true,
-      env = self.tool.env,
+      clear_env = true,
+      env = not vim.tbl_isempty(env) and env or nil,
     })
   end)
 
   if self.job <= 0 then
-    Util.error("Failed to run `" .. table.concat(self.tool.cmd, " ") .. "`")
+    local display = table.concat(cmd.cmd, " ")
+    Util.error("Failed to run `" .. display .. "`")
     self:close()
     return
   end
@@ -254,6 +283,7 @@ function M:close()
     vim.fn.jobstop(self.job)
     self.job = nil
   end
+  self.mux = nil
   if self.buf and vim.api.nvim_buf_is_valid(self.buf) then
     vim.api.nvim_buf_delete(self.buf, { force = true })
     self.buf = nil

@@ -39,6 +39,12 @@ Install with your favorite manager. With [lazy.nvim](https://github.com/folke/la
   "folke/sidekick.nvim",
   opts = {
     -- add any options here
+    cli = {
+      mux = {
+        backend = "zellij",
+        enabled = true,
+      },
+    },
   },
   keys = {
     {
@@ -51,6 +57,14 @@ Install with your favorite manager. With [lazy.nvim](https://github.com/folke/la
       end,
       expr = true,
       desc = "Goto/Apply Next Edit Suggestion",
+    },
+    {
+      "<c-.>",
+      function()
+        require("sidekick.cli").focus()
+      end,
+      desc = "Sidekick Switch Focus",
+      mode = { "n", "v" },
     },
     {
       "<leader>aa",
@@ -269,6 +283,12 @@ local defaults = {
         --   end,
         -- },
       },
+    },
+    ---@class sidekick.cli.Mux
+    ---@field backend? "tmux"|"zellij" Multiplexer backend to persist CLI sessions
+    mux = {
+      backend = "zellij",
+      enabled = false,
     },
     ---@type table<string, sidekick.cli.Tool.spec>
     tools = {
