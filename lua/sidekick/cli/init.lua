@@ -236,7 +236,11 @@ end
 function M.focus(opts)
   opts = type(opts) == "string" and { name = opts } or opts or {}
   M.with(function(t)
-    t:blur()
+    if t:is_focused() then
+      t:blur()
+    else
+      t:focus()
+    end
   end, { filter = { name = opts.name }, create = true })
 end
 
