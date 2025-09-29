@@ -143,6 +143,17 @@ function M:focus()
   return self
 end
 
+function M:blur()
+  if not self:is_open() then
+    return
+  end
+  if vim.api.nvim_get_current_win() == self.win then
+    vim.cmd.wincmd("p")
+  else
+    self:focus()
+  end
+end
+
 function M:show()
   self:start()
   if not self:is_running() then

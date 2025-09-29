@@ -238,11 +238,7 @@ end
 function M.focus(opts)
   opts = type(opts) == "string" and { name = opts } or opts or {}
   M.with(function(t)
-    if t:is_open() and vim.api.nvim_get_current_win() == t.win then
-      vim.cmd.wincmd("p")
-    else
-      t:focus()
-    end
+    t:blur()
   end, { filter = { name = opts.name }, create = true })
 end
 
