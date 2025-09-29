@@ -7,7 +7,7 @@ local TS = require("sidekick.treesitter")
 local function stub_ts()
   local original = {
     get_virtual_lines = TS.get_virtual_lines,
-    highlight_ws = TS.highlight_ws,
+    highlight_ws = TS.highlight_block,
   }
   local calls = { highlight_ws = {} }
 
@@ -19,7 +19,7 @@ local function stub_ts()
     return ret
   end
 
-  TS.highlight_ws = function(virtual_lines, opts)
+  TS.highlight_block = function(virtual_lines, opts)
     table.insert(calls.highlight_ws, {
       lines = vim.deepcopy(virtual_lines),
       opts = opts,
@@ -29,7 +29,7 @@ local function stub_ts()
 
   return function()
     TS.get_virtual_lines = original.get_virtual_lines
-    TS.highlight_ws = original.highlight_ws
+    TS.highlight_block = original.highlight_ws
   end,
     calls
 end
@@ -91,7 +91,6 @@ describe("diff", function()
         assert.are.same({
           row = 0,
           col = 9,
-          priority = 500,
           virt_text = { { "food", "SidekickDiffAdd" } },
           virt_text_pos = "inline",
         }, hunk.extmarks[2])
@@ -112,7 +111,7 @@ describe("diff", function()
         assert.are.same("change", hunk.kind)
         assert.are.same({ 0, 0 }, hunk.pos)
         assert.are.same(2, #hunk.extmarks)
-        assert.are.same("SidekickDiffDelete", hunk.extmarks[1].hl_group)
+        assert.are.same("SidekickDiffDelete", hunk.extmarks[1].line_hl_group)
         assert.are.same(1, #calls.highlight_ws)
       end,
     },
@@ -134,6 +133,8 @@ describe("diff", function()
         assert.are.same({
           leading = "SidekickDiffContext",
           trailing = "SidekickDiffContext",
+          block = "SidekickDiffAdd",
+          width = 33,
         }, calls.highlight_ws[1].opts)
       end,
     },
@@ -188,7 +189,6 @@ describe("diff", function()
         assert.are.same({
           row = 0,
           col = 9,
-          priority = 500,
           virt_text = { { "d", "SidekickDiffAdd" } },
           virt_text_pos = "inline",
         }, hunk.extmarks[1])
@@ -211,7 +211,6 @@ describe("diff", function()
         assert.are.same({
           row = 0,
           col = 0,
-          priority = 500,
           virt_text = {
             { "-", "SidekickDiffAdd" },
             { "-", "SidekickDiffAdd" },
@@ -244,7 +243,6 @@ describe("diff", function()
         assert.are.same({
           row = 0,
           col = 13,
-          priority = 500,
           virt_text = {
             { "1", "SidekickDiffAdd" },
             { " ", "SidekickDiffAdd" },

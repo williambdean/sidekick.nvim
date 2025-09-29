@@ -68,6 +68,7 @@ describe("cli context", function()
       if target == buf then
         return {
           {
+            bufnr = buf, -- changed to use the 'bufnr' from the outer scope
             lnum = 0,
             col = 2,
             severity = vim.diagnostic.severity.ERROR,
