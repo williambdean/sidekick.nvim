@@ -166,7 +166,7 @@ function M:start()
   })
 
   vim.api.nvim_buf_call(self.buf, function()
-    local env = vim.tbl_extend("force", {}, vim.uv.os_environ(), self.tool.env or {}, cmd.env or {})
+    local env = vim.tbl_extend("force", {}, vim.fn.environ(), self.tool.env or {}, cmd.env or {})
     -- add support for clearing env vars
     for k, v in pairs(env) do
       if v == false then
