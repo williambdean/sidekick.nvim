@@ -250,14 +250,30 @@ Default settings ~
           height = 20,
           layout = "vertical", ---@type "vertical" | "horizontal"
           position = "right", ---@type "left"|"bottom"|"top"|"right"
-          ---@type LazyK
-          keys = {},
+          --- CLI Tool Keymaps
+          --- default mode is `t`
+          ---@type table<string, sidekick.cli.Keymap|false>
+          keys = {
+            stopinsert = { "<esc><esc>", "stopinsert", mode = "t" }, -- enter normal mode
+            hide_n = { "q", "hide", mode = "n" }, -- hide from normal mode
+            hide_t = { "<c-q>", "hide" }, -- hide from terminal mode
+            win_p = { "<c-w>p", "blur" }, -- leave the cli window
+            blur = { "<c-o>", "blur" }, -- leave the cli window
+            prompt = { "<c-p>", "prompt" }, -- insert prompt or context
+            -- example of custom keymap:
+            -- say_hi = {
+            --   "<c-h>",
+            --   function(t)
+            --     t:send("hi!")
+            --   end,
+            -- },
+          },
         },
         ---@type table<string, sidekick.cli.Tool.spec>
         tools = {
           claude = { cmd = { "claude" }, url = "https://github.com/anthropics/claude-code" },
           codex = { cmd = { "codex", "--search" }, url = "https://github.com/openai/codex" },
-          copilot = { cmd = { "copilot" }, url = "https://github.com/github/copilot-cli" },
+          copilot = { cmd = { "copilot", "--banner" }, url = "https://github.com/github/copilot-cli" },
           cursor = { cmd = { "cursor-agent" }, url = "https://cursor.com/cli" },
           gemini = { cmd = { "gemini" }, url = "https://github.com/google-gemini/gemini-cli" },
           grok = { cmd = { "grok" }, url = "https://github.com/superagent-ai/grok-cli" },
@@ -289,6 +305,7 @@ Default settings ~
           position = {},
         },
       },
+      debug = false, -- enable debug logging
     }
 <
 
