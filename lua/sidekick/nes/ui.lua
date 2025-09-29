@@ -3,17 +3,9 @@ local Nes = require("sidekick.nes")
 
 local M = {}
 
---- Calculate the result covering full lines
----@param edit sidekick.NesEdit
-function M.parse_edit(edit)
-  local lines = vim.api.nvim_buf_get_lines(edit.buf, edit.from[1], edit.to[1] + 1, false)
-  local first, last = lines[1], lines[#lines]
-  return table.concat(lines, "\n"), first:sub(1, edit.from[2]) .. edit.text .. last:sub(edit.to[2] + 1)
-end
-
 ---@param edit sidekick.NesEdit
 function M.render(edit)
-  vim.b[edit.buf].sidekick_nes = true
+  vim.b[edit.buf].sidekick_nes_ui = true
   local diff = require("sidekick.nes.diff").diff(edit)
 
   local from, to = edit.from, edit.to
@@ -55,7 +47,8 @@ end
 
 ---@param buf number
 function M._hide(buf)
-  if vim.b[buf].sidekick_nes then
+  if vim.b[buf].sidekick_nes_ui then
+    vim.b[buf].sidekick_nes_ui = nil
     vim.api.nvim_buf_clear_namespace(buf, Config.ns, 0, -1)
   end
 end
