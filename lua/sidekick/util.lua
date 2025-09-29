@@ -23,6 +23,13 @@ function M.warn(msg)
   M.notify(msg, vim.log.levels.WARN)
 end
 
+---@param msg string
+function M.debug(msg)
+  if require("sidekick.config").debug then
+    M.warn(msg)
+  end
+end
+
 ---@generic T
 ---@param fn T
 ---@param ms? number

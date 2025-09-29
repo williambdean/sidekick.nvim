@@ -4,17 +4,9 @@ local M = {} -- test comment
 
 M._watches = {} ---@type table<string, {event: uv.uv_fs_event_t, timer: uv.uv_timer_t}>
 M.enabled = false
-M._debug = false
 
 function M.refresh()
   vim.cmd.checktime()
-end
-
----@param msg string
-function M.debug(msg)
-  if M._debug then
-    Util.warn(msg)
-  end
 end
 
 ---@param path string
@@ -22,7 +14,7 @@ function M.start(path)
   if M._watches[path] ~= nil then
     return
   end
-  M.debug("Watching " .. path)
+  Util.debug("Watching `" .. path .. "`")
   local handle = assert(vim.uv.new_fs_event())
   local timer = assert(vim.uv.new_timer())
   local ok, err = handle:start(path, {}, function(_, file)
@@ -31,7 +23,7 @@ function M.start(path)
     end
     file = path .. "/" .. file
     timer:start(100, 0, function()
-      M.debug("changed " .. file)
+      Util.debug("changed `" .. file .. "`")
       vim.schedule(M.refresh)
     end)
   end)
@@ -75,7 +67,7 @@ end
 function M.stop(path)
   local w = M._watches[path]
   if w then
-    M.debug("Stopped watching " .. path)
+    Util.debug("Stopped watching `" .. path .. "`")
     if not w.event:is_closing() then
       w.event:close()
     end

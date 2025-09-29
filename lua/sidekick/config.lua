@@ -81,6 +81,7 @@ local defaults = {
       position = {},
     },
   },
+  debug = false, -- enable debug logging
 }
 
 local config = vim.deepcopy(defaults) --[[@as sidekick.Config]]
