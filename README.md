@@ -5,10 +5,6 @@
 Review and apply diffs, chat with AI assistants, and streamline your coding,
 without leaving your editor.
 
-> [!WARNING]  
-> **Status**: Early preview. The API is still settling; expect breaking changes while
-> Copilot's inline edit endpoints evolve.
-
 <img width="2311" height="1396" alt="image" src="https://github.com/user-attachments/assets/63a33610-9a8e-45e2-bbd0-b7e3a4fde621" />
 
 ## ✨ Features
