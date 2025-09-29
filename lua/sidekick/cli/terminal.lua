@@ -154,7 +154,11 @@ function M:start()
   vim.api.nvim_create_autocmd("TermClose", {
     group = self.group,
     buffer = self.buf,
-    callback = function()
+    callback = function(ev)
+      if vim.uv.hrtime() - self.atime < 1e9 then
+        -- if closed within 2 seconds of last focus, assume it was user-initiated
+        return
+      end
       vim.schedule(function()
         self:close()
       end)
