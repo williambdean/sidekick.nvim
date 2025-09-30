@@ -324,6 +324,7 @@ local defaults = {
       claude = { cmd = { "claude" }, url = "https://github.com/anthropics/claude-code" },
       codex = { cmd = { "codex", "--search" }, url = "https://github.com/openai/codex" },
       copilot = { cmd = { "copilot", "--banner" }, url = "https://github.com/github/copilot-cli" },
+      crush = { cmd = { "crush" }, url = "https://github.com/charmbracelet/crush" },
       cursor = { cmd = { "cursor-agent" }, url = "https://cursor.com/cli" },
       gemini = { cmd = { "gemini" }, url = "https://github.com/google-gemini/gemini-cli" },
       grok = { cmd = { "grok" }, url = "https://github.com/superagent-ai/grok-cli" },
@@ -422,8 +423,9 @@ Sidekick preconfigures a handful of popular CLIs so you can get started quickly:
 
 - [`claude`](https://github.com/anthropics/claude-code) – Anthropic’s official CLI.
 - [`codex`](https://github.com/openai/codex) – OpenAI’s Codex CLI.
-- [`gemini`](https://github.com/google-gemini/gemini-cli) – Google’s Gemini CLI.
 - [`copilot`](https://github.com/github/copilot-cli) – GitHub Copilot CLI.
+- [`crush`](https://github.com/charmbracelet/crush) – Crush CLI.
+- [`gemini`](https://github.com/google-gemini/gemini-cli) – Google’s Gemini CLI.
 - [`cursor`](https://cursor.com/cli) – Cursor’s command-line interface.
 - [`grok`](https://github.com/superagent-ai/grok-cli) – xAI’s Grok CLI.
 - [`opencode`](https://github.com/sst/opencode) – OpenCode’s CLI for local workflows.
