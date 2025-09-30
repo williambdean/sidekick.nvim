@@ -241,6 +241,7 @@ function M:focus()
     return self
   end
   vim.api.nvim_set_current_win(self.win)
+  vim.cmd.startinsert()
   return self
 end
 
@@ -249,6 +250,7 @@ function M:blur()
     return
   end
   vim.cmd.wincmd("p")
+  vim.cmd.stopinsert()
 end
 
 function M:is_focused()
