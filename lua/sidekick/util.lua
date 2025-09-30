@@ -41,6 +41,23 @@ function M.debounce(fn, ms)
   end
 end
 
+--- @param buffer integer Buffer id, or 0 for current buffer
+--- @param ns_id integer Namespace id from `nvim_create_namespace()`
+--- @param row integer Line where to place the mark, 0-based. `api-indexing`
+--- @param col integer Column where to place the mark, 0-based. `api-indexing`
+--- @param opts vim.api.keyset.set_extmark Optional parameters.
+function M.set_extmark(buffer, ns_id, row, col, opts)
+  -- opts.strict = false
+  local ok, ret = pcall(vim.api.nvim_buf_set_extmark, buffer, ns_id, row, col, opts or {})
+  if not ok then
+    local e = vim.deepcopy(opts) --[[@as sidekick.Extmark]]
+    e.row, e.col = row, col
+    M.error("Failed to set extmark: " .. ret .. "\n```lua\n" .. vim.inspect(e) .. "\n```")
+    return nil
+  end
+  return ret
+end
+
 ---@param str string
 function M.width(str)
   str = str:gsub("\t", string.rep(" ", vim.o.tabstop))

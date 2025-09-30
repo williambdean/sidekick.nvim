@@ -117,11 +117,22 @@ function M._handler(err, res, ctx)
       ---@cast edit sidekick.NesEdit
       edit.buf = buf
       edit.from, edit.to = pos(buf, edit.range.start), pos(buf, edit.range["end"])
+      edit.to = M.fix_pos(buf, edit.to)
       table.insert(M._edits, edit)
     end
   end
 
   require("sidekick.nes.ui").update()
+end
+
+---@param buf number
+---@param pos sidekick.Pos
+function M.fix_pos(buf, pos)
+  local last_line = vim.api.nvim_buf_line_count(buf) - 1
+  if pos[1] > last_line then
+    return { last_line, #vim.api.nvim_buf_get_lines(buf, -2, -1, false)[1] }
+  end
+  return pos
 end
 
 ---@return boolean true if jumped
@@ -146,6 +157,7 @@ end
 ---@param pos sidekick.Pos
 function M._jump(pos)
   pos = vim.deepcopy(pos)
+  pos = M.fix_pos(0, pos)
 
   local win = vim.api.nvim_get_current_win()
 
