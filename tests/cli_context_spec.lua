@@ -6,9 +6,16 @@ describe("cli context", function()
   local original_buf
   local buf
   local orig_diag_get
+  local orig_getbufinfo
+  local extra_bufs
+
+  local function track_buffer(target)
+    extra_bufs[#extra_bufs + 1] = target
+    return target
+  end
 
   local function set_named_buffer(name, lines)
-    buf = vim.api.nvim_create_buf(false, true)
+    buf = track_buffer(vim.api.nvim_create_buf(false, true))
     if name then
       local path = name
       if not name:match("^/") then
@@ -24,6 +31,8 @@ describe("cli context", function()
   before_each(function()
     original_buf = vim.api.nvim_get_current_buf()
     orig_diag_get = vim.diagnostic.get
+    orig_getbufinfo = vim.fn.getbufinfo
+    extra_bufs = {}
   end)
 
   after_each(function()
@@ -31,8 +40,15 @@ describe("cli context", function()
     if buf and vim.api.nvim_buf_is_valid(buf) then
       vim.api.nvim_buf_delete(buf, { force = true })
     end
+    for _, b in ipairs(extra_bufs) do
+      if vim.api.nvim_buf_is_valid(b) then
+        vim.api.nvim_buf_delete(b, { force = true })
+      end
+    end
     buf = nil
+    extra_bufs = nil
     vim.diagnostic.get = orig_diag_get
+    vim.fn.getbufinfo = orig_getbufinfo
   end)
 
   it("formats current cursor location", function()
@@ -82,5 +98,27 @@ describe("cli context", function()
     local text = Context.get_diagnostics(buf)
     assert.is_truthy(text)
     assert.are.same("[ERROR] needs fixing now @diag.lua:1:3-3", text)
+  end)
+
+  it("prefers most recent non-cli buffer when invoked from a cli buffer", function()
+    local cli = set_named_buffer("cli", { "prompt" })
+    vim.b[cli].sidekick_cli = true
+
+    local stale = track_buffer(vim.api.nvim_create_buf(true, false))
+    vim.api.nvim_buf_set_name(stale, vim.fs.joinpath(vim.uv.cwd(), "stale.lua"))
+
+    local recent = track_buffer(vim.api.nvim_create_buf(true, false))
+    vim.api.nvim_buf_set_name(recent, vim.fs.joinpath(vim.uv.cwd(), "recent.lua"))
+
+    vim.fn.getbufinfo = function()
+      return {
+        { bufnr = stale, hidden = 0, lastused = 100 },
+        { bufnr = recent, hidden = 0, lastused = 200 },
+      }
+    end
+
+    local context = Context.get({ location = { row = false, col = false, range = false } })
+
+    assert.are.same({ "@recent.lua" }, context)
   end)
 end)
