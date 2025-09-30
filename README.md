@@ -36,7 +36,7 @@ without leaving your editor.
   **TIP:** can be installed with [mason-lspconfig.nvim](https://github.com/mason-org/mason-lspconfig.nvim)
 - A working `lsp/copilot.lua` configuration.
   **TIP:** Included in [nvim-lspconfig](https://github.com/neovim/nvim-lspconfig)
-- **Optional**: Other AI cli tools, such as Claude and Gemini, for integrated ai cli experience in neovim.
+- **Optional**: AI cli tools, such as Codex, Claude, Copilot, Gemini, ...
 
 ## 📦 Installation
 
