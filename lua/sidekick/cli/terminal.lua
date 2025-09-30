@@ -140,7 +140,9 @@ function M:start()
 
   local Actions = require("sidekick.cli.actions")
 
-  for name, km in pairs(Config.cli.win.keys) do
+  ---@type table<string, sidekick.cli.Tool.spec>
+  local keys = vim.tbl_extend("force", {}, Config.cli.win.keys, self.tool.keys or {})
+  for name, km in pairs(keys) do
     if type(km) == "table" then
       local lhs, rhs = km[1], km[2] or name
       ---@type sidekick.cli.Action?

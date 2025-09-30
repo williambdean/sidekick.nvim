@@ -14,6 +14,7 @@ local M = {}
 ---@field cmd string[] Command to run the CLI tool
 ---@field env? table<string, string> Environment variables to set when running the command
 ---@field url? string Web URL to open when the tool is not installed
+---@field keys? table<string, sidekick.cli.Keymap|false>
 
 ---@class sidekick.cli.Tool: sidekick.cli.Tool.spec
 ---@field name string
