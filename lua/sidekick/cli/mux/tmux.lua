@@ -17,14 +17,13 @@ function M:cmd()
 end
 
 function M._sessions()
-  local ret = vim.system({ "tmux", "list-sessions" }, { text = true }):wait()
+  local ret = vim.system({ "tmux", "list-sessions", "-F", "#{session_name}" }, { text = true }):wait()
   if ret.code ~= 0 then
     return {}
   end
   local sessions = {} ---@type string[]
   for _, line in ipairs(vim.split(ret.stdout, "\n", { plain = true })) do
-    local session = line:match("^(sidekick .-):")
-    sessions[#sessions + 1] = session
+    sessions[#sessions + 1] = line:match("^(sidekick .+)$")
   end
   return sessions
 end
