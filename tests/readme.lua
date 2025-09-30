@@ -26,8 +26,8 @@ local base = {
       function()
         require("sidekick.cli").focus()
       end,
+      mode = { "n", "x", "i", "t" },
       desc = "Sidekick Switch Focus",
-      mode = { "n", "v" },
     },
     {
       "<leader>aa",

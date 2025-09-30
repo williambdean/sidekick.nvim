@@ -92,8 +92,8 @@ Install with your favorite manager. With [lazy.nvim](https://github.com/folke/la
       function()
         require("sidekick.cli").focus()
       end,
+      mode = { "n", "x", "i", "t" },
       desc = "Sidekick Switch Focus",
-      mode = { "n", "v" },
     },
     {
       "<leader>aa",
