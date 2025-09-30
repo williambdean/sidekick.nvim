@@ -334,7 +334,14 @@ local defaults = {
       claude = { cmd = { "claude" }, url = "https://github.com/anthropics/claude-code" },
       codex = { cmd = { "codex", "--search" }, url = "https://github.com/openai/codex" },
       copilot = { cmd = { "copilot", "--banner" }, url = "https://github.com/github/copilot-cli" },
-      crush = { cmd = { "crush" }, url = "https://github.com/charmbracelet/crush" },
+      crush = {
+        cmd = { "crush" },
+        url = "https://github.com/charmbracelet/crush",
+        keys = {
+          -- crush uses <a-p> for its own functionality, so we override the default
+          prompt = { "<a-p>", "prompt" }, -- insert prompt or context
+        },
+      },
       cursor = { cmd = { "cursor-agent" }, url = "https://cursor.com/cli" },
       gemini = { cmd = { "gemini" }, url = "https://github.com/google-gemini/gemini-cli" },
       grok = { cmd = { "grok" }, url = "https://github.com/superagent-ai/grok-cli" },
