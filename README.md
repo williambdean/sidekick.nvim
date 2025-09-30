@@ -42,7 +42,7 @@ without leaving your editor.
   - **TIP:** Included in [nvim-lspconfig](https://github.com/neovim/nvim-lspconfig)
 - **Optional**: AI cli tools, such as Codex, Claude, Copilot, Gemini, …
 
-## ❓ Questions?
+## ❓ Questions
 
 - What are Copilot's Next Edit Suggestions? (**NES**)
   - Copilot can suggest the next logical change, anywhere in your project.
