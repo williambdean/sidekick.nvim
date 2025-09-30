@@ -126,7 +126,7 @@ function M.setup(opts)
     group = group,
     callback = function(ev)
       local client = vim.lsp.get_client_by_id(ev.data.client_id)
-      if client and client.name == "copilot" then
+      if client and M.is_copilot(client) then
         require("sidekick.status").attach(client)
       end
     end,
@@ -178,15 +178,27 @@ function M.setup(opts)
 
     -- attach to existing copilot clients
     notify_focus()
-    for _, client in ipairs(vim.lsp.get_clients({ name = "copilot" })) do
+    for _, client in ipairs(M.get_clients()) do
       require("sidekick.status").attach(client)
     end
   end)
 end
 
+---@param client vim.lsp.Client|string
+function M.is_copilot(client)
+  local name = type(client) == "table" and client.name or client --[[@as string]]
+  return name and name:lower():find("copilot")
+end
+
+---@param filter? vim.lsp.get_clients.Filter
+---@return vim.lsp.Client[]
+function M.get_clients(filter)
+  return vim.tbl_filter(M.is_copilot, vim.lsp.get_clients(filter))
+end
+
 ---@param buf? number
 function M.get_client(buf)
-  return vim.lsp.get_clients({ name = "copilot", bufnr = buf or 0 })[1]
+  return M.get_clients({ bufnr = buf or 0 })[1]
 end
 
 function M.set_hl()
