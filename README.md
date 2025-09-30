@@ -53,9 +53,9 @@ without leaving your editor.
   - On Neovim `< 0.12`, you can use [copilot.lua](https://github.com/zbirenbaum/copilot.lua)
   - On Neovim `>= 0.12` (_nightly_) you can enable the native feature instead:
 
-  ```lua
-  vim.lsp.inline_completion.enable()
-  ```
+    ```lua
+    vim.lsp.inline_completion.enable()
+    ```
 
 ## 📦 Installation
 
