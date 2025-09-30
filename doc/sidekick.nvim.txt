@@ -6,7 +6,7 @@ Table of Contents                            *sidekick.nvim-table-of-contents*
 1. sidekick.nvim                                 |sidekick.nvim-sidekick.nvim|
   - Features                            |sidekick.nvim-sidekick.nvim-features|
   - Requirements                    |sidekick.nvim-sidekick.nvim-requirements|
-  - Questions?                        |sidekick.nvim-sidekick.nvim-questions?|
+  - Questions                          |sidekick.nvim-sidekick.nvim-questions|
   - Installation                    |sidekick.nvim-sidekick.nvim-installation|
   - Configuration                  |sidekick.nvim-sidekick.nvim-configuration|
   - Usage                                  |sidekick.nvim-sidekick.nvim-usage|
@@ -56,11 +56,11 @@ REQUIREMENTS                        *sidekick.nvim-sidekick.nvim-requirements*
     3. copilot.lua <https://github.com/zbirenbaum/copilot.lua> and copilot.vim <https://github.com/github/copilot.vim>
     both bundle the LSP Server in their plugin.
 - A working `lsp/copilot.lua` configuration.
-    **TIP:** Included in nvim-lspconfig <https://github.com/neovim/nvim-lspconfig>
+    - **TIP:** Included in nvim-lspconfig <https://github.com/neovim/nvim-lspconfig>
 - **Optional**: AI cli tools, such as Codex, Claude, Copilot, Gemini, …
 
 
-QUESTIONS?                            *sidekick.nvim-sidekick.nvim-questions?*
+QUESTIONS                              *sidekick.nvim-sidekick.nvim-questions*
 
 - What are Copilot’s Next Edit Suggestions? (**NES**)
     - Copilot can suggest the next logical change, anywhere in your project.
