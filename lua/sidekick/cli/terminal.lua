@@ -242,8 +242,10 @@ function M:open_win()
     self.win = vim.api.nvim_get_current_win()
     if Config.cli.win.layout == "vertical" then
       vim.api.nvim_win_set_width(self.win, Config.cli.win.width)
+      vim.wo[self.win].winfixwidth = true
     else
       vim.api.nvim_win_set_height(self.win, Config.cli.win.height)
+      vim.wo[self.win].winfixheight = true
     end
   end)
   for k, v in pairs(merge(vim.deepcopy(wo), Config.cli.win.wo)) do
