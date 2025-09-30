@@ -265,6 +265,7 @@ local defaults = {
     icon = " ",
   },
   nes = {
+    ---@type boolean|fun(buf:integer):boolean?
     enabled = function(buf)
       return vim.g.sidekick_nes ~= false and vim.b.sidekick_nes ~= false
     end,
@@ -354,6 +355,12 @@ local defaults = {
       tests = "Can you write tests for this code?",
       file = { location = { row = false, col = false } },
       position = {},
+    },
+  },
+  copilot = {
+    -- track copilot's status with `didChangeStatus`
+    status = {
+      enabled = true,
     },
   },
   debug = false, -- enable debug logging
