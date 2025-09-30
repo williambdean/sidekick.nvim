@@ -1,4 +1,5 @@
 local Config = require("sidekick.config")
+local Util = require("sidekick.util")
 
 local M = {}
 
@@ -19,13 +20,53 @@ local M = {}
 M._edits = {} ---@type sidekick.NesEdit[]
 M._requests = {} ---@type table<number, number>
 
+function M.setup()
+  -- Copilot requires the custom didFocus notification
+  local function notify_focus()
+    local buf = vim.api.nvim_get_current_buf()
+    local client = Config.get_client(buf)
+    ---@diagnostic disable-next-line: param-type-mismatch
+    return client and client:notify("textDocument/didFocus", { textDocument = { uri = vim.uri_from_bufnr(buf) } })
+      or nil
+  end
+
+  ---@param events string[]
+  ---@param fn fun()
+  local function on(events, fn)
+    for _, event in ipairs(events) do
+      local name, pattern = event:match("^(%S+)%s*(.*)$") --[[@as string, string]]
+      vim.api.nvim_create_autocmd(name, {
+        pattern = pattern ~= "" and pattern or nil,
+        group = Config.augroup,
+        callback = fn,
+      })
+    end
+  end
+
+  on(Config.nes.clear.events, require("sidekick").clear)
+  on(Config.nes.trigger.events, Util.debounce(require("sidekick.nes").update, Config.nes.debounce))
+  on({ "BufEnter", "WinEnter" }, Util.debounce(notify_focus, 10))
+
+  if Config.nes.clear.esc then
+    local ESC = vim.keycode("<Esc>")
+    vim.on_key(function(_, typed)
+      if typed == ESC then
+        require("sidekick").clear()
+      end
+    end, nil)
+  end
+
+  -- attach to existing copilot clients
+  notify_focus()
+end
+
 ---@param buf? integer
 ---@return boolean
 local function is_enabled(buf)
   local enabled = Config.nes.enabled
   buf = buf or vim.api.nvim_get_current_buf()
   if type(enabled) == "function" then
-    return enabled(buf)
+    return enabled(buf) or false
   end
   return enabled ~= false
 end

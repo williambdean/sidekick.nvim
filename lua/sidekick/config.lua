@@ -13,6 +13,7 @@ local defaults = {
     icon = " ",
   },
   nes = {
+    ---@type boolean|fun(buf:integer):boolean?
     enabled = function(buf)
       return vim.g.sidekick_nes ~= false and vim.b.sidekick_nes ~= false
     end,
@@ -104,12 +105,19 @@ local defaults = {
       position = {},
     },
   },
+  copilot = {
+    -- track copilot's status with `didChangeStatus`
+    status = {
+      enabled = true,
+    },
+  },
   debug = false, -- enable debug logging
 }
 
 local state_dir = vim.fn.stdpath("state") .. "/sidekick"
 
 local config = vim.deepcopy(defaults) --[[@as sidekick.Config]]
+M.augroup = vim.api.nvim_create_augroup("sidekick", { clear = true })
 
 ---@param name string
 function M.state(name)
@@ -119,68 +127,20 @@ end
 ---@param opts? sidekick.Config
 function M.setup(opts)
   config = vim.tbl_deep_extend("force", {}, defaults, opts or {})
-  vim.fn.mkdir(state_dir, "p")
-
-  local group = vim.api.nvim_create_augroup("sidekick", { clear = true })
-
-  vim.api.nvim_create_autocmd("LspAttach", {
-    group = group,
-    callback = function(ev)
-      local client = vim.lsp.get_client_by_id(ev.data.client_id)
-      if client and M.is_copilot(client) then
-        require("sidekick.status").attach(client)
-      end
-    end,
-  })
-
   vim.schedule(function()
-    local Util = require("sidekick.util")
-
+    vim.fn.mkdir(state_dir, "p")
     M.set_hl()
     vim.api.nvim_create_autocmd("ColorScheme", {
-      group = group,
+      group = M.augroup,
       callback = M.set_hl,
     })
 
-    -- Copilot requires the custom didFocus notification
-    local function notify_focus()
-      local buf = vim.api.nvim_get_current_buf()
-      local client = M.get_client(buf)
-      ---@diagnostic disable-next-line: param-type-mismatch
-      return client and client:notify("textDocument/didFocus", { textDocument = { uri = vim.uri_from_bufnr(buf) } })
-        or nil
+    if M.nes.enabled ~= false then
+      require("sidekick.nes").setup()
     end
 
-    ---@param events string[]
-    ---@param fn fun()
-    local function on(events, fn)
-      for _, event in ipairs(events) do
-        local name, pattern = event:match("^(%S+)%s*(.*)$") --[[@as string, string]]
-        vim.api.nvim_create_autocmd(name, {
-          pattern = pattern ~= "" and pattern or nil,
-          group = group,
-          callback = fn,
-        })
-      end
-    end
-
-    on(M.nes.clear.events, require("sidekick").clear)
-    on(M.nes.trigger.events, Util.debounce(require("sidekick.nes").update, M.nes.debounce))
-    on({ "BufEnter", "WinEnter" }, Util.debounce(notify_focus, 10))
-
-    if M.nes.clear.esc then
-      local ESC = vim.keycode("<Esc>")
-      vim.on_key(function(_, typed)
-        if typed == ESC then
-          require("sidekick").clear()
-        end
-      end, nil)
-    end
-
-    -- attach to existing copilot clients
-    notify_focus()
-    for _, client in ipairs(M.get_clients()) do
-      require("sidekick.status").attach(client)
+    if M.copilot.status.enabled then
+      require("sidekick.status").setup()
     end
   end)
 end

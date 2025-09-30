@@ -38,4 +38,19 @@ function M.get(buf)
   return client and (status[client.id] or { busy = false, kind = "Normal" }) or nil
 end
 
+function M.setup()
+  vim.api.nvim_create_autocmd("LspAttach", {
+    group = Config.augroup,
+    callback = function(ev)
+      local client = vim.lsp.get_client_by_id(ev.data.client_id)
+      if client and Config.is_copilot(client) then
+        M.attach(client)
+      end
+    end,
+  })
+  for _, client in ipairs(Config.get_clients()) do
+    M.attach(client)
+  end
+end
+
 return M
