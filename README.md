@@ -39,7 +39,7 @@ without leaving your editor.
   3. [copilot.lua](https://github.com/zbirenbaum/copilot.lua) and [copilot.vim](https://github.com/github/copilot.vim)
      both bundle the LSP Server in their plugin.
 - A working `lsp/copilot.lua` configuration.
-  **TIP:** Included in [nvim-lspconfig](https://github.com/neovim/nvim-lspconfig)
+  - **TIP:** Included in [nvim-lspconfig](https://github.com/neovim/nvim-lspconfig)
 - **Optional**: AI cli tools, such as Codex, Claude, Copilot, Gemini, …
 
 ## ❓ Questions?
