@@ -26,15 +26,23 @@ function M.check()
     end
   end
   if not found then
-    error("No Copilot LSP client is enabled")
+    error("No Copilot LSP server is enabled with `vim.lsp.enable(...)`")
   end
 
-  for _, client in ipairs(Config.get_clients()) do
+  local clients = Config.get_clients()
+  local names = {} ---@type table<string,boolean>
+  for _, client in ipairs(clients) do
+    names[client.name] = true
     if client.handlers["didChangeStatus"] == require("sidekick.status").on_status then
       ok("Sidekick is handling Copilot LSP status notifications for client: " .. client.id)
     else
       error("Sidekick is not handling Copilot LSP status notifications for client: " .. client.id)
     end
+  end
+  if vim.tbl_count(names) > 1 then
+    error("You have multiple different LSP servers running: " .. table.concat(vim.tbl_map(function(n)
+      return "`" .. n .. "`"
+    end, names)))
   end
 
   start("Sidekick AI CLI")
@@ -42,14 +50,6 @@ function M.check()
     ok("autoread is enabled")
   else
     warn("autoread is disabled, file changes from AI CLI tools will not be detected automatically")
-  end
-
-  for _, tool in ipairs(require("sidekick.cli").get_tools()) do
-    if tool.installed then
-      ok("`" .. tool.name .. "` is installed")
-    else
-      warn("`" .. tool.name .. "` is not installed")
-    end
   end
 
   if Config.cli.mux.enabled then
@@ -65,6 +65,14 @@ function M.check()
       error("Multiplexer backend `" .. mux .. "` is not installed")
     else
       ok("`" .. mux .. "` is not installed, but it's not the configured backend")
+    end
+  end
+
+  for _, tool in ipairs(require("sidekick.cli").get_tools()) do
+    if tool.installed then
+      ok("`" .. tool.name .. "` is installed")
+    else
+      warn("`" .. tool.name .. "` is not installed")
     end
   end
 end
