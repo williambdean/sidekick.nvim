@@ -276,7 +276,7 @@ local defaults = {
     },
     clear = {
       -- events that clear the current next edit suggestion
-      events = { "TextChangedI", "BufWritePre", "InsertEnter" },
+      events = { "TextChangedI", "TextChanged", "BufWritePre", "InsertEnter" },
       esc = true, -- clear next edit suggestions when pressing <Esc>
     },
     ---@class sidekick.diff.Opts
@@ -291,10 +291,19 @@ local defaults = {
     win = {
       wo = {}, ---@type vim.wo
       bo = {}, ---@type vim.bo
-      width = 80,
-      height = 20,
-      layout = "vertical", ---@type "vertical" | "horizontal"
-      position = "right", ---@type "left"|"bottom"|"top"|"right"
+      layout = "right", ---@type "float"|"left"|"bottom"|"top"|"right"
+      --- Options used when layout is "float"
+      ---@type vim.api.keyset.win_config
+      float = {
+        width = 0.9,
+        height = 0.9,
+      },
+      -- Options used when layout is "left"|"bottom"|"top"|"right"
+      ---@type vim.api.keyset.win_config
+      split = {
+        width = 80,
+        height = 20,
+      },
       --- CLI Tool Keymaps
       --- default mode is `t`
       ---@type table<string, sidekick.cli.Keymap|false>

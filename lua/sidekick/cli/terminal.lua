@@ -56,6 +56,24 @@ local bo = {
   filetype = "sidekick_terminal",
 }
 
+local win_opts = {
+  ---@type vim.api.keyset.win_config
+  float = {
+    focusable = true,
+    relative = "editor",
+    style = "minimal",
+    row = 0.5,
+    col = 0.5,
+    title = " Sidekick ",
+    title_pos = "center",
+  },
+  ---@type vim.api.keyset.win_config
+  split = {
+    win = -1,
+    style = "minimal",
+  },
+}
+
 ---@param session_id string
 function M.get(session_id)
   return M.terminals[session_id]
@@ -225,30 +243,35 @@ function M:open_win()
   if self:is_open() or not self.buf then
     return
   end
-  vim.api.nvim_win_call(0, function()
-    local wincmd = {
-      left = "H",
-      bottom = "J",
-      top = "K",
-      right = "L",
-    }
 
-    local cmd = ("%s sbuffer %d | wincmd %s"):format(
-      Config.cli.win.layout,
-      self.buf,
-      wincmd[Config.cli.win.position] or "L"
-    )
+  local is_float = Config.cli.win.layout == "float"
 
-    vim.cmd(cmd)
-    self.win = vim.api.nvim_get_current_win()
-    if Config.cli.win.layout == "vertical" then
-      vim.api.nvim_win_set_width(self.win, Config.cli.win.width)
-      vim.wo[self.win].winfixwidth = true
-    else
-      vim.api.nvim_win_set_height(self.win, Config.cli.win.height)
-      vim.wo[self.win].winfixheight = true
-    end
-  end)
+  ---@type vim.api.keyset.win_config
+  local opts = vim.tbl_extend(
+    "force",
+    vim.deepcopy(is_float and win_opts.float or win_opts.split),
+    vim.deepcopy(is_float and Config.cli.win.float or Config.cli.win.split)
+  )
+
+  opts.width = opts.width <= 1 and math.floor(vim.o.columns * opts.width) or opts.width
+  opts.height = opts.height <= 1 and math.floor(vim.o.lines * opts.height) or opts.height
+
+  if is_float then
+    opts.row = opts.row <= 1 and math.floor((vim.o.lines - (opts.height or 0)) * opts.row) or opts.row
+    opts.col = opts.col <= 1 and math.floor((vim.o.columns - (opts.width or 0)) * opts.col) or opts.col
+  else
+    opts.vertical = Config.cli.win.layout == "top" or Config.cli.win.layout == "bottom"
+    opts.split = ({ top = "above", left = "left", bottom = "below", right = "right" })[Config.cli.win.layout] or "right"
+  end
+
+  self.win = vim.api.nvim_open_win(self.buf, false, opts)
+
+  if opts.vertical then
+    vim.wo[self.win].winfixheight = true
+  else
+    vim.wo[self.win].winfixwidth = true
+  end
+
   for k, v in pairs(merge(vim.deepcopy(wo), Config.cli.win.wo)) do
     ---@diagnostic disable-next-line: no-unknown
     vim.wo[self.win][k] = v
