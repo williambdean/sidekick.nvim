@@ -40,7 +40,7 @@ function M.get(opts)
       if (a.hidden == 0) ~= (b.hidden == 0) then
         return a.hidden == 0
       end
-      return a.lastused < b.lastused
+      return a.lastused > b.lastused
     end)
     if not info[1] then
       return {}
