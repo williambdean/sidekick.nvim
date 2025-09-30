@@ -53,6 +53,7 @@ local wo = {
 ---@type vim.bo
 local bo = {
   swapfile = false,
+  filetype = "sidekick_terminal",
 }
 
 ---@param session_id string
