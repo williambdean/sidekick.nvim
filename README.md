@@ -98,9 +98,19 @@ Install with your favorite manager. With [lazy.nvim](https://github.com/folke/la
     {
       "<leader>aa",
       function()
-        require("sidekick.cli").toggle({ focus = true })
+        require("sidekick.cli").toggle()
       end,
       desc = "Sidekick Toggle CLI",
+      mode = { "n", "v" },
+    },
+    {
+      "<leader>as",
+      function()
+        require("sidekick.cli").select()
+        -- Or to select only installed tools:
+        -- require("sidekick.cli").select({ filter = { installed = true } })
+      end,
+      desc = "Sidekick Select CLI",
       mode = { "n", "v" },
     },
     {
@@ -122,7 +132,7 @@ Install with your favorite manager. With [lazy.nvim](https://github.com/folke/la
     {
       "<leader>ap",
       function()
-        require("sidekick.cli").select_prompt()
+        require("sidekick.cli").prompt()
       end,
       desc = "Sidekick Ask Prompt",
       mode = { "n", "v" },
@@ -221,7 +231,7 @@ Install with your favorite manager. With [lazy.nvim](https://github.com/folke/la
     {
       "<leader>ap",
       function()
-        require("sidekick.cli").select_prompt()
+        require("sidekick.cli").prompt()
       end,
       desc = "Sidekick Ask Prompt",
       mode = { "n", "v" },
