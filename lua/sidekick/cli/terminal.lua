@@ -19,7 +19,7 @@ local Util = require("sidekick.util")
 local M = {}
 M.__index = M
 
-local INITIAL_SEND_DELAY = 2000 -- ms
+local INITIAL_SEND_DELAY = 500 -- ms
 local SEND_DELAY = 100 --ms
 
 M.terminals = {} ---@type table<string, sidekick.cli.Terminal>
