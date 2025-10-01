@@ -58,6 +58,15 @@ function M.set_extmark(buffer, ns_id, row, col, opts)
   return ret
 end
 
+function M.exit_visual_mode()
+  local mode = vim.fn.mode()
+  if not (mode:match("^[vV]$") or mode == "\22") then
+    return
+  end
+
+  vim.cmd("normal! " .. mode)
+end
+
 ---@param str string
 function M.width(str)
   str = str:gsub("\t", string.rep(" ", vim.o.tabstop))

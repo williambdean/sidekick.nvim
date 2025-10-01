@@ -9,6 +9,7 @@ local base = {
       },
     },
   },
+  -- stylua: ignore
   keys = {
     {
       "<tab>",
@@ -22,53 +23,41 @@ local base = {
       desc = "Goto/Apply Next Edit Suggestion",
     },
     {
-      "<c-.>",
-      function()
-        require("sidekick.cli").focus()
-      end,
-      mode = { "n", "x", "i", "t" },
-      desc = "Sidekick Switch Focus",
-    },
-    {
       "<leader>aa",
-      function()
-        require("sidekick.cli").toggle()
-      end,
-      desc = "Sidekick Toggle CLI",
+      function() require("sidekick.cli").toggle() end,
       mode = { "n", "v" },
+      desc = "Sidekick Toggle CLI",
     },
     {
       "<leader>as",
-      function()
-        require("sidekick.cli").select()
-        -- Or to select only installed tools:
-        -- require("sidekick.cli").select({ filter = { installed = true } })
-      end,
+      function() require("sidekick.cli").select() end,
+      -- Or to select only installed tools:
+      -- require("sidekick.cli").select({ filter = { installed = true } })
       desc = "Sidekick Select CLI",
-      mode = { "n", "v" },
     },
     {
-      "<leader>ac",
-      function()
-        require("sidekick.cli").toggle({ name = "claude", focus = true })
-      end,
-      desc = "Sidekick Claude Toggle",
-      mode = { "n", "v" },
-    },
-    {
-      "<leader>ag",
-      function()
-        require("sidekick.cli").toggle({ name = "grok", focus = true })
-      end,
-      desc = "Sidekick Grok Toggle",
-      mode = { "n", "v" },
+      "<leader>as",
+      function() require("sidekick.cli").send({ selection = true }) end,
+      mode = { "v" },
+      desc = "Sidekick Send Visual Selection",
     },
     {
       "<leader>ap",
-      function()
-        require("sidekick.cli").prompt()
-      end,
-      desc = "Sidekick Ask Prompt",
+      function() require("sidekick.cli").prompt() end,
+      mode = { "n", "v" },
+      desc = "Sidekick Select Prompt",
+    },
+    {
+      "<c-.>",
+      function() require("sidekick.cli").focus() end,
+      mode = { "n", "x", "i", "t" },
+      desc = "Sidekick Switch Focus",
+    },
+    -- Example of a keybinding to open Claude directly
+    {
+      "<leader>ac",
+      function() require("sidekick.cli").toggle({ name = "claude", focus = true }) end,
+      desc = "Sidekick Claude Toggle",
       mode = { "n", "v" },
     },
   },

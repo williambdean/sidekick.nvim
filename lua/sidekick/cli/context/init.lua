@@ -1,3 +1,5 @@
+local Config = require("sidekick.config")
+
 local M = {}
 
 ---@class sidekick.context.ctx
@@ -7,11 +9,6 @@ local M = {}
 ---@field row integer (1-based)
 ---@field col integer (1-based)
 ---@field range? sidekick.context.Range
-
----@class sidekick.Context
----@field ctx? sidekick.context.ctx
----@field lines string[]
----@field virt_lines sidekick.Text[]
 
 ---@class sidekick.context.Range
 ---@field from sidekick.Pos (1,0)-based
@@ -26,13 +23,17 @@ local M = {}
 ---@class sidekick.context.diagnostics.Opts: vim.diagnostic.GetOpts
 ---@field all? boolean
 
----@class sidekick.context.Opts
----@field buf? number
+---@class sidekick.Context
+---@field msg? string|string[]
+---@field prompt? string
 ---@field diagnostics? sidekick.context.diagnostics.Opts|boolean
 ---@field location? sidekick.context.location.Opts|boolean
 ---@field selection? boolean
 
-local CTRL_V = vim.keycode("<C-V>")
+---@type sidekick.Context
+local prompt_defaults = {
+  location = true,
+}
 
 function M.ctx()
   ---@param w integer
@@ -61,16 +62,48 @@ function M.ctx()
   }
 end
 
----@param opts? sidekick.context.Opts
-function M.get(opts)
+---@param a string|string[]|nil
+---@return string[]
+local function strlist(a)
+  return type(a) == "table" and a or { a }
+end
+
+---@param ctx? sidekick.context.ctx
+---@param opts? sidekick.Context
+function M.resolve(ctx, opts)
   opts = opts or {}
+  if opts.prompt then
+    local prompt = Config.cli.prompts[opts.prompt] or {} --[[@as sidekick.Prompt]]
+    if type(prompt) == "function" then
+      prompt = prompt(ctx)
+    end
+    prompt = type(prompt) == "string" and { msg = prompt } or prompt
+    ---@cast prompt sidekick.Context
+    if prompt then
+      local msg = strlist(prompt.msg)
+      vim.list_extend(msg, strlist(opts.msg))
+      return vim.tbl_deep_extend(
+        "force",
+        vim.deepcopy(prompt_defaults),
+        vim.deepcopy(prompt),
+        vim.deepcopy(opts),
+        { msg = msg }
+      )
+    end
+  end
+  return opts
+end
+
+---@param opts? sidekick.Context
+function M.get(opts)
   local ctx = M.ctx()
+  opts = M.resolve(ctx, opts)
 
   local ret = {} ---@type sidekick.Text[]
 
-  if opts.location ~= false and ctx and vim.tbl_contains({ "", "help" }, vim.bo[ctx.buf].buftype) then
+  if opts.location and ctx and vim.tbl_contains({ "", "help" }, vim.bo[ctx.buf].buftype) then
     local Loc = require("sidekick.cli.context.location")
-    local loc_opts = opts.diagnostics == true and {} or opts.diagnostics --[[@as sidekick.context.location.Opts]]
+    local loc_opts = opts.location == true and {} or opts.location --[[@as sidekick.context.location.Opts]]
     ---@cast ctx sidekick.context.Loc
     vim.list_extend(ret, Loc.get(ctx, loc_opts))
   end
@@ -83,9 +116,16 @@ function M.get(opts)
 
   if opts.selection ~= false and ctx and ctx.range then
     local Selection = require("sidekick.cli.context.selection")
-    ret[#ret + 1] = { { "" } }
+    if #ret > 0 then
+      ret[#ret + 1] = { { "" } }
+    end
     vim.list_extend(ret, Selection.get(ctx) or {})
     ret[#ret + 1] = { { "" } }
+  end
+
+  ---@diagnostic disable-next-line: assign-type-mismatch
+  for _, m in ipairs(strlist(opts.msg)) do
+    ret[#ret + 1] = { { m } }
   end
 
   local lines = require("sidekick.text").lines(ret)
@@ -97,7 +137,7 @@ end
 function M.selection(buf)
   buf = buf or vim.api.nvim_get_current_buf()
   local mode = vim.fn.mode()
-  if not (mode:match("^[vV]$") or mode == CTRL_V) then
+  if not (mode:match("^[vV]$") or mode == "\22") then
     return
   end
 

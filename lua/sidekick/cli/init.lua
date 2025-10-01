@@ -5,11 +5,7 @@ local Util = require("sidekick.util")
 
 local M = {}
 
----@class sidekick.Prompt: sidekick.context.Opts
----@field msg? string
----@field context? boolean enabled by default
-
----@alias sidekick.Prompt.spec sidekick.Prompt | string | fun(): (sidekick.Prompt|string)
+---@alias sidekick.Prompt string | sidekick.Context | fun(ctx?: sidekick.context.ctx): (sidekick.Context|string)
 
 ---@class sidekick.cli.Tool.spec
 ---@field cmd string[] Command to run the CLI tool
@@ -50,8 +46,7 @@ local M = {}
 ---@field on_select? fun(t:sidekick.cli.Tool)
 ---@field auto? boolean Automatically select if only one tool matches the filter
 
----@class sidekick.cli.Ask: sidekick.cli.Show,sidekick.Prompt
----@field prompt? string
+---@class sidekick.cli.Send: sidekick.cli.Show,sidekick.Context
 ---@field submit? boolean
 
 --- Keymap options similar to `vim.keymap.set` and `lazy.nvim` mappings
@@ -336,55 +331,35 @@ function M.close(opts)
   end, { filter = { name = opts.name, running = true }, all = opts.all })
 end
 
----@param opts? sidekick.cli.Ask
-function M.render_prompt(opts)
+---@param opts? sidekick.Context|string
+function M.render(opts)
   opts = opts or {}
   opts = type(opts) == "string" and { msg = opts } or opts
+  ---@cast opts sidekick.Context
 
-  if opts.prompt then
-    ---@type sidekick.Prompt.spec
-    local prompt = Config.cli.prompts[opts.prompt]
-    if not prompt then
-      Util.error("Prompt `" .. opts.prompt .. "` does not exist")
-      return
-    end
-    prompt = type(prompt) == "function" and prompt() or prompt
-    if type(prompt) == "string" then
-      opts.msg = prompt .. (opts.msg and "\n" .. opts.msg or "")
-    elseif type(prompt) == "table" then
-      opts = vim.tbl_deep_extend("force", opts, prompt)
-    end
-  end
-
-  local msg = {} ---@type sidekick.Text[]
-
-  if opts.context ~= false then
-    local Context = require("sidekick.cli.context")
-    local _, virt_lines = Context.get(opts)
-    vim.list_extend(msg, virt_lines)
-  end
-
-  msg[#msg + 1] = { { opts.msg or "" } }
-  local lines = require("sidekick.text").lines(msg)
-
-  return table.concat(lines, "\n"), msg
+  local Context = require("sidekick.cli.context")
+  return Context.get(opts)
 end
 
----@param opts? sidekick.cli.Ask
+---@param opts? sidekick.cli.Send
 ---@overload fun(msg:string)
-function M.ask(opts)
+function M.send(opts)
   opts = opts or {}
 
-  local prompt = M.render_prompt(opts)
-  if not prompt then
+  local prompt = M.render(opts)
+  if prompt:find("^%s*$") then
+    Util.warn("Nothing to send.")
     return
   end
 
   opts.on_show = function(terminal)
-    terminal:send(prompt)
-    if opts.submit then
-      terminal:submit()
-    end
+    Util.exit_visual_mode()
+    vim.schedule(function()
+      terminal:send(prompt)
+      if opts.submit then
+        terminal:submit()
+      end
+    end)
   end
 
   M.show(opts)
@@ -397,7 +372,7 @@ function M.prompt(cb)
 
   local items = {} ---@type snacks.picker.finder.Item[]
   for _, name in ipairs(prompts) do
-    local text, rendered = M.render_prompt({ prompt = name })
+    local text, rendered = M.render({ prompt = name })
     if rendered and #rendered > 0 then
       local extmarks = {} ---@type snacks.picker.Extmark[]
       for l, line in ipairs(rendered) do
@@ -454,19 +429,27 @@ function M.prompt(cb)
       return cb(choice and choice.prompt or nil)
     end
     if choice then
-      M.ask({ msg = choice.preview.text, context = false })
+      M.send({ msg = choice.preview.text, context = false })
     end
   end)
 end
 
+---@deprecated use `require("sidekick.cli").prompt()`
 function M.select_prompt(...)
   Util.deprecate('require("sidekick.cli").select_prompt()', 'require("sidekick.cli").prompt()')
   return M.prompt(...)
 end
 
+---@deprecated use `require("sidekick.cli").select()`
 function M.select_tool(...)
   Util.deprecate('require("sidekick.cli").select_tool()', 'require("sidekick.cli").select()')
   return M.select(...)
+end
+
+---@deprecated use `require("sidekick.cli").send()`
+function M.ask(...)
+  Util.deprecate('require("sidekick.cli").ask()', 'require("sidekick.cli").send()')
+  return M.send(...)
 end
 
 return M

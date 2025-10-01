@@ -27,9 +27,10 @@ function M.get(ctx, opts)
     local end_col = d.end_col or d.col or 0
 
     local vt = {} ---@type sidekick.Text
-    vt[#vt + 1] = { "[", "SnacksPickerDelim" }
-    vt[#vt + 1] = { severity, "Diagnostic" .. severity:sub(1, 1):upper() .. severity:sub(2):lower() }
-    vt[#vt + 1] = { "]", "SnacksPickerDelim" }
+    vt[#vt + 1] = {
+      "[" .. severity .. "]",
+      "DiagnosticVirtualText" .. severity:sub(1, 1):upper() .. severity:sub(2):lower(),
+    }
     vt[#vt + 1] = { " " }
 
     local msg_text = (d.message or ""):gsub("\n", " ")

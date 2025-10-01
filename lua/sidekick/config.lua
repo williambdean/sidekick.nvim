@@ -102,7 +102,7 @@ local defaults = {
       },
       qwen = { cmd = { "qwen" }, url = "https://github.com/QwenLM/qwen-code" },
     },
-    ---@type table<string, sidekick.Prompt.spec>
+    ---@type table<string, sidekick.Prompt>
     prompts = {
       explain = "Explain this code",
       diagnostics = {

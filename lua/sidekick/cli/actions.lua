@@ -8,7 +8,7 @@ function M.prompt(t)
     vim.schedule(function()
       vim.cmd.startinsert()
     end)
-    local text = prompt and Cli.render_prompt({ prompt = prompt })
+    local text = prompt and Cli.render({ prompt = prompt })
     if text then
       t:send(text)
     end

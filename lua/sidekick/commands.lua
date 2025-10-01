@@ -44,6 +44,9 @@ M.commands = {
     select = function(opts)
       require("sidekick.cli").select(opts)
     end,
+    send = function(opts)
+      require("sidekick.cli").send(opts)
+    end,
     prompt = function()
       require("sidekick.cli").prompt()
     end,
