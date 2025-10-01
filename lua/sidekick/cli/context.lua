@@ -25,30 +25,32 @@ local context_defaults = {
   location = {},
 }
 
+local function is_file(buf)
+  return vim.tbl_contains({ "", "help" }, vim.bo[buf].buftype)
+end
+
 ---@param opts sidekick.context.Opts
 function M.get(opts)
   opts = vim.tbl_extend("force", {}, context_defaults, opts or {})
-  local buf = vim.api.nvim_get_current_buf()
-  if vim.b[buf].sidekick_cli then
-    local info = vim.fn.getbufinfo({ buflisted = true, bufloaded = true })
-    ---@param b vim.fn.getbufinfo.ret.item
-    info = vim.tbl_filter(function(b)
-      return not vim.b[b.bufnr].sidekick_cli
-    end, info)
-    -- sort all by lastused of the win buffer
-    table.sort(info, function(a, b)
-      if (a.hidden == 0) ~= (b.hidden == 0) then
-        return a.hidden == 0
-      end
-      return a.lastused > b.lastused
-    end)
-    if not info[1] then
-      return {}
+  local buf = nil ---@type integer?
+  local info = vim.fn.getbufinfo({ buflisted = true, bufloaded = true })
+  ---@param b vim.fn.getbufinfo.ret.item
+  info = vim.tbl_filter(function(b)
+    return not vim.b[b.bufnr].sidekick_cli
+  end, info)
+  -- sort all by lastused of the win buffer
+  table.sort(info, function(a, b)
+    if (a.hidden == 0) ~= (b.hidden == 0) then
+      return a.hidden == 0
     end
-    buf = info[1].bufnr
-  end
+    if is_file(a.bufnr) ~= is_file(b.bufnr) then
+      return is_file(a.bufnr)
+    end
+    return a.lastused > b.lastused
+  end)
+  buf = info[1] and info[1].bufnr or nil
   local ret = {} ---@type string[]
-  if opts.location then
+  if buf and opts.location then
     ret[#ret + 1] = M.get_location(buf, opts.location == true and {} or opts.location)
   end
   if opts.diagnostics then
@@ -122,6 +124,9 @@ end
 function M.get_location(buf, opts)
   opts = vim.tbl_extend("force", {}, location_defaults, opts or {})
   buf = buf or vim.api.nvim_get_current_buf()
+  if not (is_file(buf) and vim.uv.fs_stat(vim.api.nvim_buf_get_name(buf))) then
+    return
+  end
   ---@type sidekick.context.Location
   local ctx = {
     buf = buf,
