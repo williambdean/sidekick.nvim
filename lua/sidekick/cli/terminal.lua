@@ -137,7 +137,7 @@ function M:start()
   local cmd = self.mux and self.mux:cmd() or self.tool
 
   self.buf = vim.api.nvim_create_buf(false, true)
-  for k, v in pairs(merge(vim.deepcopy(bo), self.opts.win.bo)) do
+  for k, v in pairs(merge(vim.deepcopy(bo), self.opts.bo)) do
     ---@diagnostic disable-next-line: no-unknown
     vim.bo[self.buf][k] = v
   end
@@ -146,7 +146,7 @@ function M:start()
   local Actions = require("sidekick.cli.actions")
 
   ---@type table<string, sidekick.cli.Tool.spec>
-  local keys = vim.tbl_extend("force", {}, self.opts.win.keys, self.tool.keys or {})
+  local keys = vim.tbl_extend("force", {}, self.opts.keys, self.tool.keys or {})
   for name, km in pairs(keys) do
     if type(km) == "table" then
       local lhs, rhs = km[1], km[2] or name
@@ -251,13 +251,13 @@ function M:open_win()
     return
   end
 
-  local is_float = self.opts.win.layout == "float"
+  local is_float = self.opts.layout == "float"
 
   ---@type vim.api.keyset.win_config
   local opts = vim.tbl_extend(
     "force",
     vim.deepcopy(is_float and win_opts.float or win_opts.split),
-    vim.deepcopy(is_float and self.opts.win.float or self.opts.win.split)
+    vim.deepcopy(is_float and self.opts.float or self.opts.split)
   )
 
   opts.width = opts.width <= 1 and math.floor(vim.o.columns * opts.width) or opts.width
@@ -267,8 +267,8 @@ function M:open_win()
     opts.row = opts.row <= 1 and math.floor((vim.o.lines - (opts.height or 0)) * opts.row) or opts.row
     opts.col = opts.col <= 1 and math.floor((vim.o.columns - (opts.width or 0)) * opts.col) or opts.col
   else
-    opts.vertical = self.opts.win.layout == "top" or self.opts.win.layout == "bottom"
-    opts.split = ({ top = "above", left = "left", bottom = "below", right = "right" })[self.opts.win.layout] or "right"
+    opts.vertical = self.opts.layout == "top" or self.opts.layout == "bottom"
+    opts.split = ({ top = "above", left = "left", bottom = "below", right = "right" })[self.opts.layout] or "right"
   end
 
   self.win = vim.api.nvim_open_win(self.buf, false, opts)
@@ -279,7 +279,7 @@ function M:open_win()
     vim.wo[self.win].winfixwidth = true
   end
 
-  for k, v in pairs(merge(vim.deepcopy(wo), self.opts.win.wo)) do
+  for k, v in pairs(merge(vim.deepcopy(wo), self.opts.wo)) do
     ---@diagnostic disable-next-line: no-unknown
     vim.wo[self.win][k] = v
   end
