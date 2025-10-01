@@ -7,6 +7,10 @@ local patched = false
 
 M.patches = {} ---@type table<string, sidekick.NesEdit>
 
+function M.nes_edit()
+  vim.cmd.edit(patch_file)
+end
+
 function M.nes_save()
   Util.info("Sidekick nes patches saved")
   vim.fn.writefile(vim.split(vim.json.encode(M.patches), "\n", { plain = true }), patch_file)

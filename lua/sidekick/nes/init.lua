@@ -141,7 +141,7 @@ end
 function M.clear()
   M.cancel()
   M._edits = {}
-  require("sidekick.nes.ui").hide()
+  require("sidekick.nes.ui").update()
 end
 
 --- Cancel pending requests
