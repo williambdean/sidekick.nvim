@@ -459,12 +459,13 @@ layout, or extend the prompt list. See the defaults above for all available fiel
 
 Sidekick preconfigures a handful of popular CLIs so you can get started quickly:
 
+- [`aider`](https://github.com/anthropics/claude-code) Aider
 - [`claude`](https://github.com/anthropics/claude-code) – Anthropic’s official CLI.
 - [`codex`](https://github.com/openai/codex) – OpenAI’s Codex CLI.
 - [`copilot`](https://github.com/github/copilot-cli) – GitHub Copilot CLI.
 - [`crush`](https://github.com/charmbracelet/crush) – Crush CLI.
-- [`gemini`](https://github.com/google-gemini/gemini-cli) – Google’s Gemini CLI.
 - [`cursor`](https://cursor.com/cli) – Cursor’s command-line interface.
+- [`gemini`](https://github.com/google-gemini/gemini-cli) – Google’s Gemini CLI.
 - [`grok`](https://github.com/superagent-ai/grok-cli) – xAI’s Grok CLI.
 - [`opencode`](https://github.com/sst/opencode) – OpenCode’s CLI for local workflows.
 - [`qwen`](https://github.com/QwenLM/qwen-code) – Alibaba’s Qwen Code CLI.

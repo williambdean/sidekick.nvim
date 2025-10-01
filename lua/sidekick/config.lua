@@ -79,6 +79,7 @@ local defaults = {
     },
     ---@type table<string, sidekick.cli.Tool.spec>
     tools = {
+      aider = { cmd = { "aider" }, url = "https://github.com/Aider-AI/aider" },
       claude = { cmd = { "claude" }, url = "https://github.com/anthropics/claude-code" },
       codex = { cmd = { "codex", "--search" }, url = "https://github.com/openai/codex" },
       copilot = { cmd = { "copilot", "--banner" }, url = "https://github.com/github/copilot-cli" },
