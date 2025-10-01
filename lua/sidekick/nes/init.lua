@@ -19,17 +19,46 @@ local M = {}
 
 M._edits = {} ---@type sidekick.NesEdit[]
 M._requests = {} ---@type table<number, number>
+M.enabled = false
+M.did_setup = false
+
+-- Copilot requires the custom didFocus notification
+function M.did_focus()
+  if not M.enabled then
+    return
+  end
+  local buf = vim.api.nvim_get_current_buf()
+  local client = Config.get_client(buf)
+  ---@diagnostic disable-next-line: param-type-mismatch
+  return client and client:notify("textDocument/didFocus", { textDocument = { uri = vim.uri_from_bufnr(buf) } }) or nil
+end
+
+---@param enable? boolean
+function M.enable(enable)
+  enable = enable ~= false
+  if M.enabled == enable then
+    return
+  end
+  M.enabled = enable ~= false
+  if M.enabled then
+    Config.nes.enabled = Config.nes.enabled == false and true or Config.nes.enabled
+    M.setup()
+    M.did_focus()
+    M.update()
+  else
+    M.clear()
+  end
+end
+
+function M.toggle()
+  M.enable(not M.enabled)
+end
 
 function M.setup()
-  -- Copilot requires the custom didFocus notification
-  local function notify_focus()
-    local buf = vim.api.nvim_get_current_buf()
-    local client = Config.get_client(buf)
-    ---@diagnostic disable-next-line: param-type-mismatch
-    return client and client:notify("textDocument/didFocus", { textDocument = { uri = vim.uri_from_bufnr(buf) } })
-      or nil
+  if M.did_setup then
+    return
   end
-
+  M.did_setup = true
   ---@param events string[]
   ---@param fn fun()
   local function on(events, fn)
@@ -43,27 +72,24 @@ function M.setup()
     end
   end
 
-  on(Config.nes.clear.events, require("sidekick").clear)
-  on(Config.nes.trigger.events, Util.debounce(require("sidekick.nes").update, Config.nes.debounce))
-  on({ "BufEnter", "WinEnter" }, Util.debounce(notify_focus, 10))
+  on(Config.nes.clear.events, M.clear)
+  on(Config.nes.trigger.events, Util.debounce(M.update, Config.nes.debounce))
+  on({ "BufEnter", "WinEnter" }, Util.debounce(M.did_focus, 10))
 
   if Config.nes.clear.esc then
     local ESC = vim.keycode("<Esc>")
     vim.on_key(function(_, typed)
       if typed == ESC then
-        require("sidekick").clear()
+        M.clear()
       end
     end, nil)
   end
-
-  -- attach to existing copilot clients
-  notify_focus()
 end
 
 ---@param buf? integer
 ---@return boolean
 local function is_enabled(buf)
-  local enabled = Config.nes.enabled
+  local enabled = M.enabled and Config.nes.enabled or false
   buf = buf or vim.api.nvim_get_current_buf()
   if type(enabled) == "function" then
     return enabled(buf) or false

@@ -157,7 +157,7 @@ function M.setup(opts)
     })
 
     if M.nes.enabled ~= false then
-      require("sidekick.nes").setup()
+      require("sidekick.nes").enable()
     end
 
     if M.copilot.status.enabled then
