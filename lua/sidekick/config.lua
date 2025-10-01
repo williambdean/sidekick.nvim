@@ -148,6 +148,18 @@ end
 ---@param opts? sidekick.Config
 function M.setup(opts)
   config = vim.tbl_deep_extend("force", {}, defaults, opts or {})
+
+  vim.api.nvim_create_user_command("Sidekick", function(args)
+    require("sidekick.commands").cmd(args)
+  end, {
+    range = true,
+    nargs = "?",
+    desc = "Sidekick",
+    complete = function(_, line)
+      return require("sidekick.commands").complete(line)
+    end,
+  })
+
   vim.schedule(function()
     vim.fn.mkdir(state_dir, "p")
     M.set_hl()

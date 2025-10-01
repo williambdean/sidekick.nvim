@@ -7,22 +7,6 @@ local patched = false
 
 M.patches = {} ---@type table<string, sidekick.NesEdit>
 
-function M.setup()
-  local commands = {
-    NesAdd = M.nes_add,
-    NesDel = M.nes_del,
-    NesPatch = M.nes_patch,
-    NesEdit = function()
-      vim.cmd.edit(patch_file)
-    end,
-    NesInspect = M.nes_inspect,
-  }
-  for name, command in pairs(commands) do
-    vim.api.nvim_create_user_command("SidekickDebug" .. name, command, {})
-  end
-  Util.warn("Sidekick debug enabled")
-end
-
 function M.nes_save()
   Util.info("Sidekick nes patches saved")
   vim.fn.writefile(vim.split(vim.json.encode(M.patches), "\n", { plain = true }), patch_file)
