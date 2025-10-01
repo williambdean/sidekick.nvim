@@ -15,7 +15,7 @@ describe("cli context", function()
   end
 
   local function set_named_buffer(name, lines)
-    buf = track_buffer(vim.api.nvim_create_buf(false, true))
+    buf = track_buffer(vim.api.nvim_create_buf(true, false))
     if name then
       local path = name
       if not name:match("^/") then
