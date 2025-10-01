@@ -1,5 +1,6 @@
 local Config = require("sidekick.config")
 local TS = require("sidekick.treesitter")
+local Text = require("sidekick.text")
 local Util = require("sidekick.util")
 
 local M = {}
@@ -27,17 +28,13 @@ local DIFF_INLINE_OPTS = {
   result_type = "indices",
 }
 
----@alias sidekick.DiffText {text: string, lines: string[], virt_lines: sidekick.TSVirtualLines}
+---@alias sidekick.DiffText {text: string, lines: string[], virt_lines: sidekick.Text[]}
 
 ---@class sidekick.Diff
 ---@field range {from: sidekick.Pos, to: sidekick.Pos}
 ---@field hunks sidekick.diff.Hunk[]
 ---@field from sidekick.DiffText
 ---@field to sidekick.DiffText
-
----@class sidekick.Extmark: vim.api.keyset.set_extmark
----@field row integer
----@field col integer
 
 ---@class sidekick.diff.Hunk
 ---@field pos sidekick.Pos
@@ -84,14 +81,14 @@ function M.diff(edit)
     from = {
       text = from_text,
       lines = from_lines,
-      virt_lines = TS.get_virtual_lines(from_lines, {
+      virt_lines = TS.get_virtual_lines(from_text, {
         ft = vim.bo[edit.buf].filetype,
       }),
     },
     to = {
       text = to_text,
       lines = to_lines,
-      virt_lines = TS.get_virtual_lines(to_lines, {
+      virt_lines = TS.get_virtual_lines(to_text, {
         ft = vim.bo[edit.buf].filetype,
         bg = "SidekickDiffAdd",
       }),
@@ -108,7 +105,7 @@ end
 function M.diff_lines(diff)
   local hunks = M._diff(diff.from.lines, diff.to.lines, DIFF_OPTS)
   local dels = {} ---@type table<integer, {hunk: sidekick.diff.Hunk}>
-  local adds = {} ---@type table<integer, {hunk: sidekick.diff.Hunk, virt_lines: sidekick.TSVirtualLines}>
+  local adds = {} ---@type table<integer, {hunk: sidekick.diff.Hunk, virt_lines: sidekick.Text[]}>
 
   local width = 0
   for _, hunk in ipairs(hunks) do
@@ -146,7 +143,7 @@ function M.diff_lines(diff)
       end
       if bc > 0 then
         local virt_lines = vim.list_slice(diff.to.virt_lines, bi, bi + bc - 1)
-        width = math.max(width, TS.virt_lines_width(virt_lines))
+        width = math.max(width, Text.lines_width(virt_lines))
         adds[row + (ac > 0 and ac - 1 or 0)] = { hunk = h, virt_lines = virt_lines }
       end
     end
@@ -178,10 +175,10 @@ function M.diff_lines(diff)
 end
 
 ---@param line_idx integer
----@param vl_all sidekick.TSVirtualLines
+---@param vl_all sidekick.Text[]
 function M._index(line_idx, vl_all)
   local toks = {} ---@type string[]
-  local vl = {} ---@type sidekick.TSVirtualText
+  local vt = {} ---@type sidekick.Text
   local index = {} ---@type table<integer, {col: integer, end_col: integer}>
   index[0] = { col = 0, end_col = 0 } -- needed for insertions before the first token
   for _, t in ipairs(vl_all[line_idx] or {}) do
@@ -189,7 +186,7 @@ function M._index(line_idx, vl_all)
     for _, p in ipairs(parts) do
       local idx = #toks + 1
       toks[idx] = p
-      vl[idx] = { p, t[2] }
+      vt[idx] = { p, t[2] }
       index[idx] = { col = index[idx - 1].end_col, end_col = index[idx - 1].end_col + #p }
     end
   end
@@ -200,7 +197,7 @@ function M._index(line_idx, vl_all)
       return index[#index]
     end,
   })
-  return toks, index, vl
+  return toks, index, vt
 end
 
 ---@param diff sidekick.Diff

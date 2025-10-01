@@ -156,6 +156,15 @@ function M.setup(opts)
       callback = M.set_hl,
     })
 
+    -- Track when a window was last focused
+    vim.api.nvim_create_autocmd({ "WinEnter" }, {
+      group = M.augroup,
+      callback = function()
+        local win = vim.api.nvim_get_current_win()
+        vim.w[win].sidekick_visit = vim.uv.hrtime()
+      end,
+    })
+
     if M.nes.enabled ~= false then
       require("sidekick.nes").enable()
     end

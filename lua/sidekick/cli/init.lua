@@ -7,6 +7,7 @@ local M = {}
 
 ---@class sidekick.Prompt: sidekick.context.Opts
 ---@field msg? string
+---@field context? boolean enabled by default
 
 ---@alias sidekick.Prompt.spec sidekick.Prompt | string | fun(): (sidekick.Prompt|string)
 
@@ -355,14 +356,18 @@ function M.render_prompt(opts)
     end
   end
 
-  local msg = {} ---@type string[]
+  local msg = {} ---@type sidekick.Text[]
 
-  local Context = require("sidekick.cli.context")
-  vim.list_extend(msg, Context.get(opts))
+  if opts.context ~= false then
+    local Context = require("sidekick.cli.context")
+    local _, virt_lines = Context.get(opts)
+    vim.list_extend(msg, virt_lines)
+  end
 
-  msg[#msg + 1] = opts.msg or ""
+  msg[#msg + 1] = { { opts.msg or "" } }
+  local lines = require("sidekick.text").lines(msg)
 
-  return table.concat(msg, "\n")
+  return table.concat(lines, "\n"), msg
 end
 
 ---@param opts? sidekick.cli.Ask
@@ -389,37 +394,25 @@ end
 function M.prompt(cb)
   local prompts = vim.tbl_keys(Config.cli.prompts) ---@type string[]
   table.sort(prompts)
-  local ok, Snacks = pcall(require, "snacks")
 
   local items = {} ---@type snacks.picker.finder.Item[]
   for _, name in ipairs(prompts) do
-    local rendered = M.render_prompt({ prompt = name }) or ""
-    if not rendered:match("^%s*$") then
+    local text, rendered = M.render_prompt({ prompt = name })
+    if rendered and #rendered > 0 then
       local extmarks = {} ---@type snacks.picker.Extmark[]
-      if ok and Snacks then
-        local lines = vim.split(rendered, "\n", { plain = true })
-        for l, line in ipairs(lines) do
-          local hls = { { line } } ---@type snacks.picker.Highlight[]
-          Snacks.picker.highlight.markdown(hls)
-          Snacks.picker.highlight.highlight(hls, {
-            ["(@)[^:]+"] = "Bold",
-            ["@([^:]+)"] = "SnacksPickerDir",
-            ["@[^:]+(:)"] = "SnacksPickerDelim",
-            ["@[^:]+:([^:]+)"] = "SnacksPickerRow",
-            ["@[^:]+:[^:]+(:)"] = "SnacksPickerDelim",
-            ["@[^:]+:[^:]+:([^:]+)"] = "SnacksPickerCol",
-            ["%[WARN%]"] = "DiagnosticVirtualTextWarn",
-            ["%[ERROR%]"] = "DiagnosticVirtualTextError",
-            ["%[HINT%]"] = "DiagnosticVirtualTextHint",
-            ["%[INFO%]"] = "DiagnosticVirtualTextInfo",
-            ["%[OK%]"] = "DiagnosticVirtualTextOk",
-          })
-          for _, hl in ipairs(hls) do
-            if not hl[1] then
-              ---@cast hl snacks.picker.Extmark
-              hl.row = l
-              extmarks[#extmarks + 1] = hl
+      for l, line in ipairs(rendered) do
+        local col = 0
+        for _, hl in ipairs(line) do
+          if hl[1] then
+            if hl[2] then
+              extmarks[#extmarks + 1] = {
+                row = l,
+                col = col,
+                end_col = col + #hl[1],
+                hl_group = hl[2],
+              }
             end
+            col = col + #hl[1]
           end
         end
       end
@@ -429,7 +422,7 @@ function M.prompt(cb)
         value = name,
         prompt = name,
         preview = {
-          text = rendered,
+          text = text,
           extmarks = extmarks,
         },
       }
@@ -461,7 +454,7 @@ function M.prompt(cb)
       return cb(choice and choice.prompt or nil)
     end
     if choice then
-      M.ask({ prompt = choice.prompt })
+      M.ask({ msg = choice.preview.text, context = false })
     end
   end)
 end

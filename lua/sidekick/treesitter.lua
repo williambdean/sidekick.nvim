@@ -1,70 +1,34 @@
-local Util = require("sidekick.util")
-
 local M = {}
 
----@alias sidekick.TSHighlight string | { [1]:string, [2]:string }
----@alias sidekick.TSTextChunk { [1]:string, [2]?:sidekick.TSHighlight }
----@alias sidekick.TSVirtualText sidekick.TSTextChunk[]
----@alias sidekick.TSVirtualLines sidekick.TSVirtualText[]
+---@param source string|number
+---@param opts? {ft:string, start_row?: integer, end_row?: integer, bg?: string}
+---@return sidekick.Text[]
+function M.get_virtual_lines(source, opts)
+  opts = opts or {}
 
----@param lines string[]
----@param opts {ft:string, bg?:string}
----@return sidekick.TSVirtualLines
-function M.get_virtual_lines(lines, opts)
-  local lang = vim.treesitter.language.get_lang(opts.ft)
-  local source = table.concat(lines, "\n")
-  local parser ---@type vim.treesitter.LanguageTree?
-  if lang then
-    lang = lang:lower()
-    local ok = false
-    ok, parser = pcall(vim.treesitter.get_string_parser, source, lang)
-    parser = ok and parser or nil
-  end
+  local lines = type(source) == "number"
+      and vim.api.nvim_buf_get_lines(source, opts.start_row or 0, opts.end_row or -1, false)
+    or vim.split(source --[[@as string]], "\n")
 
-  if not parser then
+  local extmarks = M.get_extmarks(source, opts)
+  if not extmarks then
     return vim.tbl_map(function(line)
       return { { line } }
     end, lines)
   end
 
   local index = {} ---@type table<number, table<number, string>>
-
-  parser:parse(true)
-  parser:for_each_tree(function(tstree, tree)
-    if not tstree then
-      return
-    end
-    local query = vim.treesitter.query.get(tree:lang(), "highlights")
-    -- Some injected languages may not have highlight queries.
-    if not query then
-      return
-    end
-
-    for capture, node, metadata in query:iter_captures(tstree:root(), source) do
-      ---@type string
-      local name = query.captures[capture]
-      if name ~= "spell" then
-        local range = { node:range() } ---@type number[]
-        local multi = range[1] ~= range[3]
-        local text = multi
-            and vim.split(vim.treesitter.get_node_text(node, source, metadata[capture]), "\n", { plain = true })
-          or {}
-        for row = range[1] + 1, range[3] + 1 do
-          local first, last = row == range[1] + 1, row == range[3] + 1
-          local end_col = last and range[4] or #(text[row - range[1]] or "")
-          local col = first and range[2] or 0
-          end_col = multi and first and end_col + range[2] or end_col
-          local hl_group = "@" .. name .. "." .. lang
-          index[row] = index[row] or {}
-          for i = col + 1, end_col do
-            index[row][i] = hl_group
-          end
-        end
+  for _, e in ipairs(extmarks) do
+    e.row = e.row - (opts.start_row and opts.start_row or 0)
+    if e.hl_group and e.end_col then
+      index[e.row] = index[e.row] or {}
+      for i = e.col + 1, e.end_col do
+        index[e.row][i] = e.hl_group
       end
     end
-  end)
+  end
 
-  local ret = {} ---@type sidekick.TSVirtualLines
+  local ret = {} ---@type sidekick.Text[]
   for i = 1, #lines do
     local line = lines[i]
     local from = 0
@@ -97,7 +61,7 @@ function M.get_virtual_lines(lines, opts)
 end
 
 --- Highlight leading/trailing whitespace and EOL in virtual lines
----@param virtual_lines sidekick.TSVirtualLines
+---@param virtual_lines sidekick.Text[]
 ---@param opts? {leading?:string, trailing?:string, block?:string, width?:number}
 function M.highlight_block(virtual_lines, opts)
   if #virtual_lines == 0 then
@@ -153,21 +117,71 @@ function M.highlight_block(virtual_lines, opts)
   return virtual_lines
 end
 
----@param vt sidekick.TSVirtualText
-function M.virt_text_width(vt)
-  local ret = 0
-  for _, chunk in ipairs(vt) do
-    ret = ret + Util.width(chunk[1])
-  end
-  return ret
-end
+---@param source string|number
+---@param opts? {ft:string, start_row?: integer, end_row?: integer}
+function M.get_extmarks(source, opts)
+  opts = opts or {}
+  local buf = type(source) == "number" and source or nil
+  assert(buf or opts.ft, "Either buf or ft should be specified")
 
----@param vl sidekick.TSVirtualLines
-function M.virt_lines_width(vl)
-  local ret = 0
-  for _, vt in ipairs(vl) do
-    ret = math.max(ret, M.virt_text_width(vt))
+  local lang = vim.treesitter.language.get_lang(buf and vim.bo[buf].filetype or opts.ft)
+
+  local parser ---@type vim.treesitter.LanguageTree?
+  if lang then
+    lang = lang:lower()
+    local ok = false
+    if buf then
+      ok, parser = pcall(vim.treesitter.get_parser, buf, lang)
+    else
+      ok, parser = pcall(vim.treesitter.get_string_parser, source, lang)
+    end
+    parser = ok and parser or nil
   end
+
+  if not parser then
+    return
+  end
+
+  local ret = {} ---@type sidekick.Extmark[]
+  local skips = { spell = true, nospell = true, conceal = true }
+
+  parser:parse(true)
+  parser:for_each_tree(function(tstree, tree)
+    if not tstree then
+      return
+    end
+    local query = vim.treesitter.query.get(tree:lang(), "highlights")
+    -- Some injected languages may not have highlight queries.
+    if not query then
+      return
+    end
+
+    for capture, node, metadata in query:iter_captures(tstree:root(), source, opts.start_row, opts.end_row) do
+      ---@type string
+      local name = query.captures[capture]
+      if not skips[name] then
+        local range = { node:range() } ---@type number[]
+        local multi = range[1] ~= range[3]
+        local text = multi
+            and vim.split(vim.treesitter.get_node_text(node, source, metadata[capture]), "\n", { plain = true })
+          or {}
+        for row = range[1] + 1, range[3] + 1 do
+          local first, last = row == range[1] + 1, row == range[3] + 1
+          local end_col = last and range[4] or #(text[row - range[1]] or "")
+          end_col = multi and first and end_col + range[2] or end_col
+          ret[#ret + 1] = {
+            row = row,
+            col = first and range[2] or 0,
+            end_col = end_col,
+            priority = (tonumber(metadata.priority or metadata[capture] and metadata[capture].priority) or 100),
+            conceal = metadata.conceal or metadata[capture] and metadata[capture].conceal,
+            hl_group = "@" .. name .. "." .. lang,
+          }
+        end
+      end
+    end
+  end)
+
   return ret
 end
 
