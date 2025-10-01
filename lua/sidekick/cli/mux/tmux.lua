@@ -1,3 +1,4 @@
+local Config = require("sidekick.config")
 local Util = require("sidekick.util")
 
 ---@class sidekick.cli.muxer.Tmux: sidekick.cli.Muxer
@@ -11,7 +12,20 @@ function M:cmd()
     Util.error("tmux executable not found on $PATH")
     return
   end
-  local cmd = { "tmux", "new", "-A", "-s", self.session.id }
+
+  local conf = {} ---@type string[]
+  for _, f in ipairs({ "/etc/tmux.conf", "~/.tmux.conf", (vim.env.XDG_CONFIG_HOME or "~/.config") .. "/tmux/tmux.conf" }) do
+    f = vim.fs.normalize(f)
+    if vim.fn.filereadable(f) == 1 then
+      conf[#conf + 1] = "source-file " .. f
+    end
+  end
+  conf[#conf + 1] = "set -g status off"
+
+  local conf_file = Config.state("tmux-" .. self.session.id .. ".conf")
+  vim.fn.writefile(conf, conf_file)
+
+  local cmd = { "tmux", "-f", conf_file, "new", "-A", "-s", self.session.id }
   vim.list_extend(cmd, self.tool.cmd)
   return { cmd = cmd }
 end
