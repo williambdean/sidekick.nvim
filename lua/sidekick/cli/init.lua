@@ -47,6 +47,7 @@ local M = {}
 
 ---@class sidekick.cli.Select: sidekick.cli.With
 ---@field on_select? fun(t:sidekick.cli.Tool)
+---@field auto? boolean Automatically select if only one tool matches the filter
 
 ---@class sidekick.cli.Ask: sidekick.cli.Show,sidekick.Prompt
 ---@field prompt? string
@@ -59,7 +60,7 @@ local M = {}
 ---@field mode? string|string[]
 
 ---@param opts? sidekick.cli.Select
-function M.select_tool(opts)
+function M.select(opts)
   opts = opts or {}
   local tools = M.get_tools(opts.filter)
 
@@ -90,9 +91,9 @@ function M.select_tool(opts)
   end
 
   if #tools == 0 then
-    Util.warn("No tools to select")
+    Util.warn("No tools match the given filter")
     return
-  elseif #tools == 1 then
+  elseif #tools == 1 and opts.auto then
     on_select(tools[1])
     return
   end
@@ -253,7 +254,8 @@ function M.with(cb, opts)
   local terminals = M.get_terminals(opts.filter)
   terminals = opts.all and terminals or { terminals[1] }
   if #terminals == 0 and opts.create then
-    M.select_tool({
+    M.select({
+      auto = true,
       filter = opts.filter,
       on_select = function(tool)
         if vim.fn.executable(tool.cmd[1]) == 0 then
@@ -467,6 +469,11 @@ end
 function M.select_prompt(...)
   Util.deprecate('require("sidekick.cli").select_prompt()', 'require("sidekick.cli").prompt()')
   return M.prompt(...)
+end
+
+function M.select_tool(...)
+  Util.deprecate('require("sidekick.cli").select_tool()', 'require("sidekick.cli").select()')
+  return M.select(...)
 end
 
 return M

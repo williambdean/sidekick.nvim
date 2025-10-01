@@ -32,9 +32,19 @@ local base = {
     {
       "<leader>aa",
       function()
-        require("sidekick.cli").toggle({ focus = true })
+        require("sidekick.cli").toggle()
       end,
       desc = "Sidekick Toggle CLI",
+      mode = { "n", "v" },
+    },
+    {
+      "<leader>as",
+      function()
+        require("sidekick.cli").select()
+        -- Or to select only installed tools:
+        -- require("sidekick.cli").select({ filter = { installed = true } })
+      end,
+      desc = "Sidekick Select CLI",
       mode = { "n", "v" },
     },
     {
