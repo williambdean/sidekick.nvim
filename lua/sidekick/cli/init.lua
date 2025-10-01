@@ -392,44 +392,46 @@ function M.select_prompt(cb)
   local items = {} ---@type snacks.picker.finder.Item[]
   for _, name in ipairs(prompts) do
     local rendered = M.render_prompt({ prompt = name }) or ""
-    local extmarks = {} ---@type snacks.picker.Extmark[]
-    if ok and Snacks then
-      local lines = vim.split(rendered, "\n", { plain = true })
-      for l, line in ipairs(lines) do
-        local hls = { { line } } ---@type snacks.picker.Highlight[]
-        Snacks.picker.highlight.markdown(hls)
-        Snacks.picker.highlight.highlight(hls, {
-          ["(@)[^:]+"] = "Bold",
-          ["@([^:]+)"] = "SnacksPickerDir",
-          ["@[^:]+(:)"] = "SnacksPickerDelim",
-          ["@[^:]+:([^:]+)"] = "SnacksPickerRow",
-          ["@[^:]+:[^:]+(:)"] = "SnacksPickerDelim",
-          ["@[^:]+:[^:]+:([^:]+)"] = "SnacksPickerCol",
-          ["%[WARN%]"] = "DiagnosticVirtualTextWarn",
-          ["%[ERROR%]"] = "DiagnosticVirtualTextError",
-          ["%[HINT%]"] = "DiagnosticVirtualTextHint",
-          ["%[INFO%]"] = "DiagnosticVirtualTextInfo",
-          ["%[OK%]"] = "DiagnosticVirtualTextOk",
-        })
-        for _, hl in ipairs(hls) do
-          if not hl[1] then
-            ---@cast hl snacks.picker.Extmark
-            hl.row = l
-            extmarks[#extmarks + 1] = hl
+    if not rendered:match("^%s*$") then
+      local extmarks = {} ---@type snacks.picker.Extmark[]
+      if ok and Snacks then
+        local lines = vim.split(rendered, "\n", { plain = true })
+        for l, line in ipairs(lines) do
+          local hls = { { line } } ---@type snacks.picker.Highlight[]
+          Snacks.picker.highlight.markdown(hls)
+          Snacks.picker.highlight.highlight(hls, {
+            ["(@)[^:]+"] = "Bold",
+            ["@([^:]+)"] = "SnacksPickerDir",
+            ["@[^:]+(:)"] = "SnacksPickerDelim",
+            ["@[^:]+:([^:]+)"] = "SnacksPickerRow",
+            ["@[^:]+:[^:]+(:)"] = "SnacksPickerDelim",
+            ["@[^:]+:[^:]+:([^:]+)"] = "SnacksPickerCol",
+            ["%[WARN%]"] = "DiagnosticVirtualTextWarn",
+            ["%[ERROR%]"] = "DiagnosticVirtualTextError",
+            ["%[HINT%]"] = "DiagnosticVirtualTextHint",
+            ["%[INFO%]"] = "DiagnosticVirtualTextInfo",
+            ["%[OK%]"] = "DiagnosticVirtualTextOk",
+          })
+          for _, hl in ipairs(hls) do
+            if not hl[1] then
+              ---@cast hl snacks.picker.Extmark
+              hl.row = l
+              extmarks[#extmarks + 1] = hl
+            end
           end
         end
       end
+      ---@class sidekick.select_prompt.Item: snacks.picker.finder.Item
+      items[#items + 1] = {
+        text = name,
+        value = name,
+        prompt = name,
+        preview = {
+          text = rendered,
+          extmarks = extmarks,
+        },
+      }
     end
-    ---@class sidekick.select_prompt.Item: snacks.picker.finder.Item
-    items[#items + 1] = {
-      text = name,
-      value = name,
-      prompt = name,
-      preview = {
-        text = rendered,
-        extmarks = extmarks,
-      },
-    }
   end
 
   ---@type snacks.picker.ui_select.Opts
