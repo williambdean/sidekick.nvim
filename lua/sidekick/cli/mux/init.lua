@@ -34,7 +34,7 @@ function M:cmd()
 end
 
 ---@return string[]?
-function M:_sessions()
+function M._sessions()
   error("Muxer:cmd() not implemented")
 end
 
@@ -44,7 +44,7 @@ function M.sessions()
   if not mux then
     return {}
   end
-  local sessions = mux:_sessions() or {}
+  local sessions = mux._sessions() or {}
   local ret = {} ---@type table<string,sidekick.cli.Session>
   for _, id in ipairs(sessions) do
     local s = Session.get(id)
