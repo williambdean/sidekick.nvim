@@ -38,7 +38,7 @@ function M.render(edit)
   for r = from[1], math.min(vim.api.nvim_buf_line_count(edit.buf) - 1, to[1]) do
     if not rows[r] then
       Util.set_extmark(edit.buf, Config.ns, r, 0, {
-        end_line = r + 1,
+        end_row = r + 1,
         hl_group = "SidekickDiffContext",
         hl_eol = true,
       })
