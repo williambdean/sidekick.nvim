@@ -5,7 +5,7 @@ local M = {}
 ---@field buf integer
 ---@field cwd string
 ---@field row integer (1-based)
----@field col integer (0-based)
+---@field col integer (1-based)
 ---@field range? sidekick.context.Range
 
 ---@class sidekick.Context
@@ -56,12 +56,12 @@ function M.ctx()
     buf = buf,
     cwd = vim.fs.normalize(vim.fn.getcwd(win)),
     row = cursor[1],
-    col = cursor[2],
+    col = cursor[2] + 1,
     range = M.selection(buf),
   }
 end
 
----@param opts sidekick.context.Opts
+---@param opts? sidekick.context.Opts
 function M.get(opts)
   opts = opts or {}
   local ctx = M.ctx()

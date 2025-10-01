@@ -12,6 +12,7 @@ local function stub_ts()
   local calls = { highlight_ws = {} }
 
   TS.get_virtual_lines = function(lines, opts)
+    lines = type(lines) == "string" and vim.split(lines, "\n", { plain = true }) or lines
     local ret = {}
     for i, line in ipairs(lines) do
       ret[i] = { { line, opts and opts.bg } }
