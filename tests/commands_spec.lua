@@ -96,7 +96,7 @@ describe("commands", function()
       {
         name = "filters by prefix",
         input = "cli s",
-        expected_completions = { "select", "show" },
+        expected_completions = { "select", "show", "send" },
       },
       {
         name = "returns empty for unknown command",
@@ -141,7 +141,7 @@ describe("commands", function()
       {
         name = "suggests subcommands",
         input = "Sidekick cli s",
-        expected = { "select", "show" },
+        expected = { "select", "show", "send" },
       },
       {
         name = "returns empty when no matches",
