@@ -495,7 +495,3 @@ in your statusline.
 <!-- setup_lualine:end -->
 
 </details>
-
-## 📄 License
-
-Released under the [MIT License](LICENSE).
