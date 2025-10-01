@@ -36,7 +36,12 @@ local defaults = {
   -- Work with AI cli tools directly from within Neovim
   cli = {
     watch = true, -- notify Neovim of file changes done by AI CLI tools
+    ---@class sidekick.win.Opts
     win = {
+      --- The is ran when a new terminal is created, before starting it.
+      --- Here you can change window options `terminal.opts`.
+      ---@param terminal sidekick.cli.Terminal
+      config = function(terminal) end,
       wo = {}, ---@type vim.wo
       bo = {}, ---@type vim.bo
       layout = "right", ---@type "float"|"left"|"bottom"|"top"|"right"
