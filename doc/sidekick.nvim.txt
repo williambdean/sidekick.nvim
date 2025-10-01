@@ -56,7 +56,9 @@ REQUIREMENTS                        *sidekick.nvim-sidekick.nvim-requirements*
     both bundle the LSP Server in their plugin.
 - A working `lsp/copilot.lua` configuration.
     - **TIP:** Included in nvim-lspconfig <https://github.com/neovim/nvim-lspconfig>
-- **Optional**: AI cli tools, such as Codex, Claude, Copilot, Gemini, …
+- snacks.nvim <https://github.com/folke/snacks.nvim> for better prompt/tool selection **(optional)**
+- AI cli tools, such as Codex, Claude, Copilot, Gemini, … **(optional)**
+    see the |sidekick.nvim-ai-cli-integration| section for details.
 
 
 QUESTIONS                              *sidekick.nvim-sidekick.nvim-questions*
@@ -92,6 +94,7 @@ Install with your favorite manager. With lazy.nvim
           },
         },
       },
+      -- stylua: ignore
       keys = {
         {
           "<tab>",
@@ -105,53 +108,41 @@ Install with your favorite manager. With lazy.nvim
           desc = "Goto/Apply Next Edit Suggestion",
         },
         {
-          "<c-.>",
-          function()
-            require("sidekick.cli").focus()
-          end,
-          mode = { "n", "x", "i", "t" },
-          desc = "Sidekick Switch Focus",
-        },
-        {
           "<leader>aa",
-          function()
-            require("sidekick.cli").toggle()
-          end,
-          desc = "Sidekick Toggle CLI",
+          function() require("sidekick.cli").toggle() end,
           mode = { "n", "v" },
+          desc = "Sidekick Toggle CLI",
         },
         {
           "<leader>as",
-          function()
-            require("sidekick.cli").select()
-            -- Or to select only installed tools:
-            -- require("sidekick.cli").select({ filter = { installed = true } })
-          end,
+          function() require("sidekick.cli").select() end,
+          -- Or to select only installed tools:
+          -- require("sidekick.cli").select({ filter = { installed = true } })
           desc = "Sidekick Select CLI",
-          mode = { "n", "v" },
         },
         {
-          "<leader>ac",
-          function()
-            require("sidekick.cli").toggle({ name = "claude", focus = true })
-          end,
-          desc = "Sidekick Claude Toggle",
-          mode = { "n", "v" },
-        },
-        {
-          "<leader>ag",
-          function()
-            require("sidekick.cli").toggle({ name = "grok", focus = true })
-          end,
-          desc = "Sidekick Grok Toggle",
-          mode = { "n", "v" },
+          "<leader>as",
+          function() require("sidekick.cli").send({ selection = true }) end,
+          mode = { "v" },
+          desc = "Sidekick Send Visual Selection",
         },
         {
           "<leader>ap",
-          function()
-            require("sidekick.cli").prompt()
-          end,
-          desc = "Sidekick Ask Prompt",
+          function() require("sidekick.cli").prompt() end,
+          mode = { "n", "v" },
+          desc = "Sidekick Select Prompt",
+        },
+        {
+          "<c-.>",
+          function() require("sidekick.cli").focus() end,
+          mode = { "n", "x", "i", "t" },
+          desc = "Sidekick Switch Focus",
+        },
+        -- Example of a keybinding to open Claude directly
+        {
+          "<leader>ac",
+          function() require("sidekick.cli").toggle({ name = "claude", focus = true }) end,
+          desc = "Sidekick Claude Toggle",
           mode = { "n", "v" },
         },
       },
@@ -362,7 +353,7 @@ Default settings ~
           },
           qwen = { cmd = { "qwen" }, url = "https://github.com/QwenLM/qwen-code" },
         },
-        ---@type table<string, sidekick.Prompt.spec>
+        ---@type table<string, sidekick.Prompt>
         prompts = {
           explain = "Explain this code",
           diagnostics = {
