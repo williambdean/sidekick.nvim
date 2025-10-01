@@ -207,8 +207,15 @@ function M:start()
     end,
   })
 
-  vim.api.nvim_buf_call(self.buf, function()
-    local env = vim.tbl_extend("force", {}, vim.fn.environ(), self.tool.env or {}, cmd.env or {})
+  vim.api.nvim_win_call(self.win, function()
+    local env = vim.tbl_extend("force", {}, vim.uv.os_environ(), self.tool.env or {}, cmd.env or {}, {
+      NVIM = vim.v.servername,
+      NVIM_LISTEN_ADDRESS = false,
+      NVIM_LOG_FILE = false,
+      VIM = false,
+      VIMRUNTIME = false,
+      TERM = "xterm-256color",
+    })
     -- add support for clearing env vars
     for k, v in pairs(env) do
       if v == false then
