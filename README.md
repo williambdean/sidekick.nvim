@@ -40,7 +40,9 @@ without leaving your editor.
      both bundle the LSP Server in their plugin.
 - A working `lsp/copilot.lua` configuration.
   - **TIP:** Included in [nvim-lspconfig](https://github.com/neovim/nvim-lspconfig)
-- **Optional**: AI cli tools, such as Codex, Claude, Copilot, Gemini, …
+- [snacks.nvim](https://github.com/folke/snacks.nvim) for better prompt/tool selection **_(optional)_**
+- AI cli tools, such as Codex, Claude, Copilot, Gemini, … **_(optional)_**
+  see the [🤖 AI CLI Integration](#-ai-cli-integration) section for details.
 
 ## ❓ Questions
 
