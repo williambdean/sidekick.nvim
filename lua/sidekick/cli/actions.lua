@@ -4,7 +4,7 @@ local M = {}
 
 function M.prompt(t)
   local Cli = require("sidekick.cli")
-  Cli.select_prompt(function(prompt)
+  Cli.prompt(function(prompt)
     vim.schedule(function()
       vim.cmd.startinsert()
     end)

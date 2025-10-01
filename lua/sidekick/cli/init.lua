@@ -384,7 +384,7 @@ function M.ask(opts)
 end
 
 ---@param cb? fun(prompt?: string)
-function M.select_prompt(cb)
+function M.prompt(cb)
   local prompts = vim.tbl_keys(Config.cli.prompts) ---@type string[]
   table.sort(prompts)
   local ok, Snacks = pcall(require, "snacks")
@@ -462,6 +462,11 @@ function M.select_prompt(cb)
       M.ask({ prompt = choice.prompt })
     end
   end)
+end
+
+function M.select_prompt(...)
+  Util.deprecate('require("sidekick.cli").select_prompt()', 'require("sidekick.cli").prompt()')
+  return M.prompt(...)
 end
 
 return M

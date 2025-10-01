@@ -113,4 +113,8 @@ function M.split_chars(str)
   return ret
 end
 
+function M.deprecate(deprecated, replacement)
+  M.warn(("`%s` is deprecated.\nPlease use `%s` instead."):format(deprecated, replacement))
+end
+
 return M
