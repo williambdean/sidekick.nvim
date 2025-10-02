@@ -412,7 +412,7 @@ function M.prompt(cb)
       ---@class sidekick.select_prompt.Item: snacks.picker.finder.Item
       items[#items + 1] = {
         text = name,
-        value = name,
+        data = text,
         name = name,
         prompt = prompt,
         preview = {
@@ -444,6 +444,14 @@ function M.prompt(cb)
         preset = "vscode",
         min_height = 0.6,
         preview = true,
+      },
+      win = {
+        input = {
+          keys = {
+            ["<c-y>"] = { "yank", mode = { "n", "i" } },
+            ["y"] = { "yank" },
+          },
+        },
       },
     },
   }
