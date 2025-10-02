@@ -11,7 +11,7 @@ This repository contains `sidekick.nvim`, a Neovim plugin that integrates GitHub
 
 ## Everyday Commands
 
-- `./scripts/test` – runs the `mini.test` suite using the Lazy.nvim harness; automatically installs test dependencies.
+- `./scripts/test` – runs the `mini.test` suite using the Lazy.nvim harness; automatically installs test dependencies. Set `LAZY_OFFLINE=1` when you need to skip the bootstrap download (for fully offline CI).
 - `./scripts/docs` – regenerates docs in `README.md` using the snippets in `tests/readme.lua`.
 - `stylua lua tests` – format Lua source and tests when needed.
 - `selene` – lint Lua files (if selene is installed in the environment).
