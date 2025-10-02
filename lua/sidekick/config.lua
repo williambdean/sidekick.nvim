@@ -38,7 +38,7 @@ local defaults = {
     watch = true, -- notify Neovim of file changes done by AI CLI tools
     ---@class sidekick.win.Opts
     win = {
-      --- The is ran when a new terminal is created, before starting it.
+      --- This is run when a new terminal is created, before starting it.
       --- Here you can change window options `terminal.opts`.
       ---@param terminal sidekick.cli.Terminal
       config = function(terminal) end,
@@ -61,7 +61,7 @@ local defaults = {
       --- default mode is `t`
       ---@type table<string, sidekick.cli.Keymap|false>
       keys = {
-        -- -- diabled the soptinsert keymaps since it interfers with some tools
+        -- -- disabled the stopinsert keymaps since it interferes with some tools
         -- -- Use Neovim's default `<c-\><c-n>` instead
         -- stopinsert = { "<c-o>", "stopinsert", mode = "t" }, -- enter normal mode
         hide_n = { "q", "hide", mode = "n" }, -- hide the terminal window in normal mode
