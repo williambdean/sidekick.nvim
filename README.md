@@ -11,8 +11,7 @@ without leaving your editor.
 
 - **🤖 Next Edit Suggestions (NES) powered by Copilot LSP**
   - 🪄 **Automatic Suggestions**: Fetches suggestions automatically when you pause typing or move the cursor.
-  - 🎨 **Rich Diffs**: Visualizes changes with inline and block-level diffs, featuring Treesitter-based syntax highlighting.
-    granular diffing down to the word or character level.
+  - 🎨 **Rich Diffs**: Visualizes changes with inline and block-level diffs, featuring Treesitter-based syntax highlighting with granular diffing down to the word or character level.
   - 🧭 **Hunk-by-Hunk Navigation**: Jump through edits to review them one by one before applying.
   - 📊 **Statusline Integration**: Shows Copilot LSP's status, request progress, and preview text in your statusline.
 
@@ -44,20 +43,19 @@ without leaving your editor.
 - AI cli tools, such as Codex, Claude, Copilot, Gemini, … **_(optional)_**
   see the [🤖 AI CLI Integration](#-ai-cli-integration) section for details.
 
-## ❓ Questions
+## 🚀 Quick Start
 
-- What are Copilot's Next Edit Suggestions? (**NES**)
-  - Copilot can suggest the next logical change, anywhere in your project.
-  - For more info, see this [blog post](https://githubnext.com/projects/copilot-next-edit-suggestions/)
+1. **Install** the plugin with your package manager (see below)
+2. **Configure Copilot LSP** - must be enabled with `vim.lsp.enable`
+3. **Check health**: `:checkhealth sidekick`
+4. **Sign in to Copilot**: `:LspCopilotSignIn`
+5. **Try it out**:
+   - Type some code and pause - watch for Next Edit Suggestions appearing
+   - Press `<Tab>` to navigate through or apply suggestions
+   - Use `<leader>aa` to open AI CLI tools
 
-- Does **NES** replace Copilot's inline suggestions?
-  - No! You'll likely still want to pair **NES** with a plugin that supports inline suggestions.
-  - On Neovim `< 0.12`, you can use [copilot.lua](https://github.com/zbirenbaum/copilot.lua)
-  - On Neovim `>= 0.12` (_nightly_) you can enable the native feature instead:
-
-    ```lua
-    vim.lsp.inline_completion.enable()
-    ```
+> [!NOTE]
+> **New to Next Edit Suggestions?** Unlike inline completions, NES suggests entire refactorings or multi-line changes anywhere in your file - think of it as Copilot's "big picture" suggestions.
 
 ## 📦 Installation
 
@@ -497,19 +495,24 @@ The default keymaps are:
 
 ### Default CLI tools
 
-Sidekick preconfigures a handful of popular CLIs so you can get started quickly:
+Sidekick preconfigures popular AI CLIs. Run `:checkhealth sidekick` to see which ones are installed.
 
-- [`aider`](https://github.com/Aider-AI/aider) - Aider
-- [`amazon_q`](https://github.com/aws/amazon-q-developer-cli) – Amazon Q
-- [`claude`](https://github.com/anthropics/claude-code) – Anthropic’s Claude Code
-- [`codex`](https://github.com/openai/codex) – OpenAI’s Codex
-- [`copilot`](https://github.com/github/copilot-cli) – GitHub Copilot
-- [`crush`](https://github.com/charmbracelet/crush) – Crush
-- [`cursor`](https://cursor.com/cli) – Cursor CLI
-- [`gemini`](https://github.com/google-gemini/gemini-cli) – Google’s Gemini CLI.
-- [`grok`](https://github.com/superagent-ai/grok-cli) – xAI’s Grok CLI.
-- [`opencode`](https://github.com/sst/opencode) – OpenCode
-- [`qwen`](https://github.com/QwenLM/qwen-code) – Alibaba’s Qwen Code
+| Tool | Description | Installation |
+|------|-------------|--------------|
+| [`aider`](https://github.com/Aider-AI/aider) | AI pair programmer | `pip install aider-chat` or `pipx install aider-chat` |
+| [`amazon_q`](https://github.com/aws/amazon-q-developer-cli) | Amazon Q Developer | [Install guide](https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/command-line-getting-started-installing.html) |
+| [`claude`](https://github.com/anthropics/claude-code) | Claude Code CLI | `npm install -g @anthropic-ai/claude-code` |
+| [`codex`](https://github.com/openai/codex) | OpenAI Codex CLI | See [OpenAI docs](https://github.com/openai/codex) |
+| [`copilot`](https://github.com/github/copilot-cli) | GitHub Copilot CLI | `npm install -g @githubnext/github-copilot-cli` |
+| [`crush`](https://github.com/charmbracelet/crush) | Charm's AI assistant | See [installation](https://github.com/charmbracelet/crush) |
+| [`cursor`](https://cursor.com/cli) | Cursor CLI agent | See [Cursor docs](https://cursor.com/cli) |
+| [`gemini`](https://github.com/google-gemini/gemini-cli) | Google Gemini CLI | See [repo](https://github.com/google-gemini/gemini-cli) |
+| [`grok`](https://github.com/superagent-ai/grok-cli) | xAI Grok CLI | See [repo](https://github.com/superagent-ai/grok-cli) |
+| [`opencode`](https://github.com/sst/opencode) | OpenCode CLI | `npm install -g opencode` |
+| [`qwen`](https://github.com/QwenLM/qwen-code) | Alibaba Qwen Code | See [repo](https://github.com/QwenLM/qwen-code) |
+
+> [!TIP]
+> After installing tools, restart Neovim or run `:Sidekick cli select` to see them available.
 
 ## 🚀 Commands
 
@@ -644,3 +647,119 @@ in your statusline.
 <!-- setup_lualine:end -->
 
 </details>
+
+## 🔧 Troubleshooting
+
+### NES not showing suggestions?
+
+1. Run `:checkhealth sidekick` to verify your setup
+2. Check Copilot is signed in: `:LspCopilotSignIn`
+3. Verify the LSP is attached: `:lua vim.print(require("sidekick.config").get_client())`
+4. Try manually triggering: `:Sidekick nes update`
+5. Check if NES is enabled: `:lua vim.print(require("sidekick.config").nes.enabled)`
+
+### CLI tools not starting?
+
+1. Verify the tool is installed: `which claude` (or your tool name)
+2. Check `:checkhealth sidekick` for tool installation status
+3. Try running the tool directly in your terminal first
+4. Check for errors with `:messages` after attempting to start
+
+### Performance issues with large files?
+
+- **Increase debounce delay**: `opts = { nes = { debounce = 300 } }`
+- **Disable inline diffs**: `opts = { nes = { diff = { inline = false } } }`
+- **Disable NES for specific buffers**: `vim.b.sidekick_nes = false`
+- **Reduce trigger events**: Customize `nes.trigger.events` to be less frequent
+
+### Terminal sessions not persisting?
+
+Make sure you have tmux or zellij installed and enable the multiplexer:
+
+```lua
+opts = {
+  cli = {
+    mux = {
+      enabled = true,
+      backend = "zellij", -- or "tmux"
+    },
+  },
+}
+```
+
+## ❓ FAQ
+
+### How is this different from copilot.lua or copilot.vim?
+
+`copilot.lua` and `copilot.vim` provide **inline completions** (suggestions as you type). `sidekick.nvim` adds:
+- **Next Edit Suggestions (NES)**: Multi-line refactorings and context-aware edits across your file
+- **AI CLI Integration**: Built-in terminal for Claude, Gemini, and other AI tools
+
+Use them together for the complete experience!
+
+### Do I need a GitHub Copilot subscription?
+
+Yes, but only for the **NES feature** (Next Edit Suggestions). The **AI CLI integration** works independently with any CLI tool (Claude, Gemini, etc.) and doesn't require Copilot.
+
+### Can I use this without NES, just for CLI tools?
+
+Absolutely! Just disable NES:
+
+```lua
+opts = {
+  nes = { enabled = false },
+}
+```
+
+### Will this work with Neovim 0.10?
+
+No, Neovim **>= 0.11.2** is required for the LSP features and API used by sidekick.nvim.
+
+### How do I add my own AI tool?
+
+Add it to the `cli.tools` configuration:
+
+```lua
+opts = {
+  cli = {
+    tools = {
+      my_tool = {
+        cmd = { "my-ai-cli", "--flag" },
+        url = "https://github.com/example/my-tool",
+        -- Optional: custom keymaps for this tool
+        keys = {
+          submit = { "<c-s>", function(t) t:send("\n") end },
+        },
+      },
+    },
+  },
+}
+```
+
+### Does sidekick.nvim replace Copilot's inline suggestions?
+
+No! NES complements inline suggestions. They serve different purposes:
+- **Inline completions**: Quick, as-you-type suggestions (use copilot.lua or native `vim.lsp.inline_completion`)
+- **NES**: Larger refactorings and multi-line changes after you pause
+
+You'll want both for the best experience.
+
+### How do I create custom prompts?
+
+Add them to your config:
+
+```lua
+opts = {
+  cli = {
+    prompts = {
+      refactor = "Please refactor {this} to be more maintainable",
+      security = "Review {file} for security vulnerabilities",
+      custom = function(ctx)
+        return "Current file: " .. ctx.buf .. " at line " .. ctx.row
+      end,
+    },
+  },
+}
+```
+
+Then use with `<leader>ap` or `:Sidekick cli prompt`.
