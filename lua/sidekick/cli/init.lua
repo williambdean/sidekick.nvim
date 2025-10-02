@@ -371,7 +371,7 @@ function M.send(opts)
   M.show(opts)
 end
 
----@param cb? fun(prompt?: string)
+---@param cb? fun(msg?: string)
 function M.prompt(cb)
   local prompts = vim.tbl_keys(Config.cli.prompts) ---@type string[]
   table.sort(prompts)
@@ -459,7 +459,7 @@ function M.prompt(cb)
   ---@param choice? sidekick.select_prompt.Item
   vim.ui.select(items, opts, function(choice)
     if cb then
-      return cb(choice and choice.prompt or nil)
+      return cb(choice and choice.preview.text or nil)
     end
     if choice then
       M.send({ msg = choice.preview.text, render = false })
