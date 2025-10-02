@@ -91,38 +91,6 @@ local custom = {
       expr = true,
       desc = "Goto/Apply Next Edit Suggestion",
     },
-    {
-      "<leader>aa",
-      function()
-        require("sidekick.cli").toggle({ focus = true })
-      end,
-      desc = "Sidekick Toggle CLI",
-      mode = { "n", "v" },
-    },
-    {
-      "<leader>ac",
-      function()
-        -- Same as above, but opens Claude directly
-        require("sidekick.cli").toggle({ name = "claude", focus = true })
-      end,
-      desc = "Sidekick Claude Toggle",
-    },
-    {
-      "<leader>ap",
-      function()
-        require("sidekick.cli").prompt()
-      end,
-      desc = "Sidekick Ask Prompt",
-      mode = { "n", "v" },
-    },
-    {
-      "<leader>ag",
-      function()
-        -- Jump straight into Grok with the current context
-        require("sidekick.cli").toggle({ name = "grok", focus = true })
-      end,
-      desc = "Sidekick Grok Toggle",
-    },
   },
 }
 
