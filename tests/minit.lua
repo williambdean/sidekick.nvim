@@ -19,6 +19,10 @@ end
 
 -- Setup lazy.nvim
 require("lazy.minit").setup({
+  performance = {
+    -- reset_pack_pacth = false,
+    rtp = { reset = false },
+  },
   spec = {
     {
       dir = vim.uv.cwd(),
