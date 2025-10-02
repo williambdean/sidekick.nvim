@@ -326,7 +326,12 @@ local defaults = {
       cursor = { cmd = { "cursor-agent" }, url = "https://cursor.com/cli" },
       gemini = { cmd = { "gemini" }, url = "https://github.com/google-gemini/gemini-cli" },
       grok = { cmd = { "grok" }, url = "https://github.com/superagent-ai/grok-cli" },
-      opencode = { cmd = { "opencode" }, url = "https://github.com/sst/opencode" },
+      opencode = {
+        cmd = { "opencode" },
+        -- HACK: https://github.com/sst/opencode/issues/445
+        env = { OPENCODE_THEME = "system" },
+        url = "https://github.com/sst/opencode",
+      },
       qwen = { cmd = { "qwen" }, url = "https://github.com/QwenLM/qwen-code" },
     },
     --- Add custom context. See `lua/sidekick/context/init.lua`
