@@ -312,11 +312,12 @@ Default settings ~
           --- default mode is `t`
           ---@type table<string, sidekick.cli.Keymap|false>
           keys = {
-            stopinsert = { "<esc><esc>", "stopinsert", mode = "t" }, -- enter normal mode
-            hide_n = { "q", "hide", mode = "n" }, -- hide from normal mode
-            hide_t = { "<c-q>", "hide" }, -- hide from terminal mode
+            -- -- diabled the soptinsert keymaps since it interfers with some tools
+            -- -- Use Neovim's default `<c-\><c-n>` instead
+            -- stopinsert = { "<c-o>", "stopinsert", mode = "t" }, -- enter normal mode
+            hide_n = { "q", "hide", mode = "n" }, -- hide the terminal window in normal mode
+            hide_t = { "<c-q>", "hide" }, -- hide the terminal window in terminal mode
             win_p = { "<c-w>p", "blur" }, -- leave the cli window
-            blur = { "<c-o>", "blur" }, -- leave the cli window
             prompt = { "<c-p>", "prompt" }, -- insert prompt or context
             -- example of custom keymap:
             -- say_hi = {
