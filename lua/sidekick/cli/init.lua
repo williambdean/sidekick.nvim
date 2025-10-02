@@ -1,11 +1,17 @@
 local Config = require("sidekick.config")
+local Context = require("sidekick.cli.context")
 local Session = require("sidekick.cli.session")
 local Terminal = require("sidekick.cli.terminal")
 local Util = require("sidekick.util")
 
 local M = {}
 
----@alias sidekick.Prompt string | sidekick.Context | fun(ctx?: sidekick.context.ctx): (sidekick.Context|string)
+---@class sidekick.Prompt
+---@field msg string
+
+---@class sidekick.cli.Message
+---@field msg? string
+---@field prompt? string
 
 ---@class sidekick.cli.Tool.spec
 ---@field cmd string[] Command to run the CLI tool
@@ -46,8 +52,9 @@ local M = {}
 ---@field on_select? fun(t:sidekick.cli.Tool)
 ---@field auto? boolean Automatically select if only one tool matches the filter
 
----@class sidekick.cli.Send: sidekick.cli.Show,sidekick.Context
+---@class sidekick.cli.Send: sidekick.cli.Show,sidekick.cli.Message
 ---@field submit? boolean
+---@field render? boolean
 
 --- Keymap options similar to `vim.keymap.set` and `lazy.nvim` mappings
 ---@class sidekick.cli.Keymap: vim.keymap.set.Opts
@@ -331,14 +338,9 @@ function M.close(opts)
   end, { filter = { name = opts.name, running = true }, all = opts.all })
 end
 
----@param opts? sidekick.Context|string
+---@param opts? sidekick.cli.Message|string
 function M.render(opts)
-  opts = opts or {}
-  opts = type(opts) == "string" and { msg = opts } or opts
-  ---@cast opts sidekick.Context
-
-  local Context = require("sidekick.cli.context")
-  return Context.get(opts)
+  return Context.get():render(opts or "")
 end
 
 ---@param opts? sidekick.cli.Send
@@ -346,8 +348,12 @@ end
 function M.send(opts)
   opts = opts or {}
 
-  local prompt = M.render(opts)
-  if prompt:find("^%s*$") then
+  if not opts.msg and not opts.prompt and Util.visual_mode() then
+    opts.msg = "{selection}"
+  end
+
+  local msg = opts.render ~= false and M.render(opts) or opts.msg
+  if not msg then
     Util.warn("Nothing to send.")
     return
   end
@@ -355,7 +361,7 @@ function M.send(opts)
   opts.on_show = function(terminal)
     Util.exit_visual_mode()
     vim.schedule(function()
-      terminal:send(prompt)
+      terminal:send(msg .. "\n")
       if opts.submit then
         terminal:submit()
       end
@@ -369,10 +375,22 @@ end
 function M.prompt(cb)
   local prompts = vim.tbl_keys(Config.cli.prompts) ---@type string[]
   table.sort(prompts)
+  local context = Context.get()
+  local test = Context.get()
+  test.get = function(_, name)
+    if name == "nl" then
+      return { { { "\\n", "@string.escape" } } }
+    end
+    return { { { ("{%s}"):format(name), "Special" } } }
+  end
 
   local items = {} ---@type snacks.picker.finder.Item[]
   for _, name in ipairs(prompts) do
-    local text, rendered = M.render({ prompt = name })
+    local prompt = Config.cli.prompts[name] or {}
+    prompt = type(prompt) == "string" and { msg = prompt } or prompt
+    ---@cast prompt sidekick.Prompt
+    prompt.msg = prompt.msg or ""
+    local text, rendered = context:render({ prompt = name })
     if rendered and #rendered > 0 then
       local extmarks = {} ---@type snacks.picker.Extmark[]
       for l, line in ipairs(rendered) do
@@ -395,7 +413,8 @@ function M.prompt(cb)
       items[#items + 1] = {
         text = name,
         value = name,
-        prompt = name,
+        name = name,
+        prompt = prompt,
         preview = {
           text = text,
           extmarks = extmarks,
@@ -410,14 +429,20 @@ function M.prompt(cb)
     ---@param item sidekick.select_prompt.Item
     format_item = function(item, is_snacks)
       if is_snacks then
-        return { { item.text, "Special" } }
+        local ret = {} ---@type snacks.picker.Highlight[]
+        ret[#ret + 1] = { item.name, "Title" }
+        ret[#ret + 1] = { string.rep(" ", 18 - #item.name) }
+        local _, prompt = test:render({ msg = item.prompt.msg:gsub("\n", "{nl}"), this = false })
+        vim.list_extend(ret, prompt and prompt[1] or {})
+        return ret
       end
-      return ("[%s] %s"):format(item.text, item.prompt)
+      return ("[%s] %s"):format(item.name, string.rep(" ", 18 - #item.name) .. item.prompt.msg)
     end,
     picker = {
       preview = "preview",
       layout = {
         preset = "vscode",
+        min_height = 0.6,
         preview = true,
       },
     },
@@ -429,7 +454,7 @@ function M.prompt(cb)
       return cb(choice and choice.prompt or nil)
     end
     if choice then
-      M.send({ msg = choice.preview.text, context = false })
+      M.send({ msg = choice.preview.text, render = false })
     end
   end)
 end

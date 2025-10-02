@@ -10,7 +10,7 @@ function M.prompt(t)
     end)
     local text = prompt and Cli.render({ prompt = prompt })
     if text then
-      t:send(text)
+      t:send(text .. "\n")
     end
   end)
 end
