@@ -339,6 +339,7 @@ local defaults = {
     ---@type table<string, sidekick.cli.Tool.spec>
     tools = {
       aider = { cmd = { "aider" }, url = "https://github.com/Aider-AI/aider" },
+      amazon_q = { cmd = { "q" }, url = "https://github.com/aws/amazon-q-developer-cli" },
       claude = { cmd = { "claude" }, url = "https://github.com/anthropics/claude-code" },
       codex = { cmd = { "codex", "--search" }, url = "https://github.com/openai/codex" },
       copilot = { cmd = { "copilot", "--banner" }, url = "https://github.com/github/copilot-cli" },
@@ -450,6 +451,7 @@ layout, or extend the prompt list. See the defaults above for all available fiel
 Sidekick preconfigures a handful of popular CLIs so you can get started quickly:
 
 - [`aider`](https://github.com/Aider-AI/aider) - Aider CLI.
+- [`amazon_q`](https://github.com/aws/amazon-q-developer-cli) – Amazon Q CLI.
 - [`claude`](https://github.com/anthropics/claude-code) – Anthropic’s official CLI.
 - [`codex`](https://github.com/openai/codex) – OpenAI’s Codex CLI.
 - [`copilot`](https://github.com/github/copilot-cli) – GitHub Copilot CLI.
