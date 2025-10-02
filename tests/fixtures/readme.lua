@@ -25,7 +25,6 @@ local base = {
     {
       "<leader>aa",
       function() require("sidekick.cli").toggle() end,
-      mode = { "n", "v" },
       desc = "Sidekick Toggle CLI",
     },
     {
@@ -33,18 +32,24 @@ local base = {
       function() require("sidekick.cli").select() end,
       -- Or to select only installed tools:
       -- require("sidekick.cli").select({ filter = { installed = true } })
-      desc = "Sidekick Select CLI",
+      desc = "Select CLI",
     },
     {
-      "<leader>as",
+      "<leader>at",
+      function() require("sidekick.cli").send({ msg = "{this}" }) end,
+      mode = { "x", "n" },
+      desc = "Send This",
+    },
+    {
+      "<leader>av",
       function() require("sidekick.cli").send({ msg = "{selection}" }) end,
-      mode = { "v" },
-      desc = "Sidekick Send Visual Selection",
+      mode = { "x" },
+      desc = "Send Visual Selection",
     },
     {
       "<leader>ap",
       function() require("sidekick.cli").prompt() end,
-      mode = { "n", "v" },
+      mode = { "n", "x" },
       desc = "Sidekick Select Prompt",
     },
     {
@@ -57,8 +62,7 @@ local base = {
     {
       "<leader>ac",
       function() require("sidekick.cli").toggle({ name = "claude", focus = true }) end,
-      desc = "Sidekick Claude Toggle",
-      mode = { "n", "v" },
+      desc = "Sidekick Toggle Claude",
     },
   },
 }

@@ -93,7 +93,6 @@ Install with your favorite manager. With [lazy.nvim](https://github.com/folke/la
     {
       "<leader>aa",
       function() require("sidekick.cli").toggle() end,
-      mode = { "n", "v" },
       desc = "Sidekick Toggle CLI",
     },
     {
@@ -101,18 +100,24 @@ Install with your favorite manager. With [lazy.nvim](https://github.com/folke/la
       function() require("sidekick.cli").select() end,
       -- Or to select only installed tools:
       -- require("sidekick.cli").select({ filter = { installed = true } })
-      desc = "Sidekick Select CLI",
+      desc = "Select CLI",
     },
     {
-      "<leader>as",
+      "<leader>at",
+      function() require("sidekick.cli").send({ msg = "{this}" }) end,
+      mode = { "x", "n" },
+      desc = "Send This",
+    },
+    {
+      "<leader>av",
       function() require("sidekick.cli").send({ msg = "{selection}" }) end,
-      mode = { "v" },
-      desc = "Sidekick Send Visual Selection",
+      mode = { "x" },
+      desc = "Send Visual Selection",
     },
     {
       "<leader>ap",
       function() require("sidekick.cli").prompt() end,
-      mode = { "n", "v" },
+      mode = { "n", "x" },
       desc = "Sidekick Select Prompt",
     },
     {
@@ -125,8 +130,7 @@ Install with your favorite manager. With [lazy.nvim](https://github.com/folke/la
     {
       "<leader>ac",
       function() require("sidekick.cli").toggle({ name = "claude", focus = true }) end,
-      desc = "Sidekick Claude Toggle",
-      mode = { "n", "v" },
+      desc = "Sidekick Toggle Claude",
     },
   },
 }
@@ -383,14 +387,16 @@ shares helper prompts that bundle buffer context, the current cursor position, a
 diagnostics when requested.
 
 - `require("sidekick.cli").toggle()` – open or focus the most recent tool, or pick one if none are running.
-- `require("sidekick.cli").ask({ prompt = "review", submit = true })` – format a prompt,
+- `require("sidekick.cli").select()` – select a tool to open from a list of all configured tools.
+- `require("sidekick.cli").send({ prompt = "review", submit = true })` – format a prompt,
   push it to the active tool, and send it immediately.
-- `require("sidekick.cli").ask({ msg = "What does this do?", submit = true })` – same as above,
+- `require("sidekick.cli").send({ msg = "What does this do?", submit = true })` – same as above,
   but with a custom message.
-- `require("sidekick.cli").select_prompt()` – browse the prompt presets (Snacks picker is
+- `require("sidekick.cli").prompt()` – browse the prompt presets (Snacks picker is
   used when available).
 
-Keymaps that pair well with the defaults:
+<details>
+<summary>Keymaps that pair well with the defaults:</summary>
 
 ```lua
 {
@@ -404,31 +410,194 @@ Keymaps that pair well with the defaults:
   {
     "<leader>ap",
     function()
-      require("sidekick.cli").select_prompt()
+      require("sidekick.cli").prompt()
     end,
     desc = "Sidekick Prompt Picker",
   },
 }
 ```
 
+</details>
+
 Tune the behaviour via `Config.cli`: add your own tool definitions, tweak window
 layout, or extend the prompt list. See the defaults above for all available fields.
+
+### Prompts & Context
+
+Sidekick comes with a set of predefined prompts that you can use with your AI tools.
+You can also use context variables in your prompts to include information about the
+current file, selection, diagnostics, and more.
+
+**Available Prompts:**
+
+- **changes**: `Can you review my changes?`
+- **diagnostics**: `Can you help me fix the diagnostics in {file}?\n{diagnostics}`
+- **diagnostics_all**: `Can you help me fix these diagnostics?\n{diagnostics_all}`
+- **document**: `Add documentation to {position}`
+- **explain**: `Explain {this}`
+- **fix**: `Can you fix {this}?`
+- **optimize**: `How can {this} be optimized?`
+- **review**: `Can you review {file} for any issues or improvements?`
+- **tests**: `Can you write tests for {this}?`
+
+**Available Context Variables:**
+
+- `{buffers}`: A list of all open buffers.
+- `{file}`: The current file path.
+- `{position}`: The cursor position in the current file.
+- `{selection}`: The visual selection.
+- `{diagnostics}`: The diagnostics for the current buffer.
+- `{diagnostics_all}`: All diagnostics in the workspace.
+- `{this}`: A special context variable. If the current buffer is a file, it resolves to `{position}`. Otherwise, it resolves to the literal string "this" and appends the current `{selection}` to the prompt.
+
+### CLI Keymaps
+
+You can customize the keymaps for the CLI window by setting the `cli.win.keys` option.
+The default keymaps are:
+
+- `q` (in normal mode): Hide the terminal window.
+- `<c-q>` (in terminal mode): Hide the terminal window.
+- `<c-w>p`: Leave the CLI window.
+- `<c-p>`: Insert prompt or context.
+
+<details><summary>Example of how to override the default keymaps
+</summary>
+
+```lua
+{
+  "folke/sidekick.nvim",
+  opts = {
+    cli = {
+      win = {
+        keys = {
+          -- override the default hide keymap
+          hide_n = { "<leader>q", "hide", mode = "n" },
+          -- add a new keymap to say hi
+          say_hi = {
+            "<c-h>",
+            function(t)
+              t:send("hi!")
+            end,
+          },
+        },
+      },
+    },
+  },
+}
+```
+
+</details>
 
 ### Default CLI tools
 
 Sidekick preconfigures a handful of popular CLIs so you can get started quickly:
 
-- [`aider`](https://github.com/Aider-AI/aider) - Aider CLI.
-- [`amazon_q`](https://github.com/aws/amazon-q-developer-cli) – Amazon Q CLI.
-- [`claude`](https://github.com/anthropics/claude-code) – Anthropic’s official CLI.
-- [`codex`](https://github.com/openai/codex) – OpenAI’s Codex CLI.
-- [`copilot`](https://github.com/github/copilot-cli) – GitHub Copilot CLI.
-- [`crush`](https://github.com/charmbracelet/crush) – Crush CLI.
-- [`cursor`](https://cursor.com/cli) – Cursor’s command-line interface.
+- [`aider`](https://github.com/Aider-AI/aider) - Aider
+- [`amazon_q`](https://github.com/aws/amazon-q-developer-cli) – Amazon Q
+- [`claude`](https://github.com/anthropics/claude-code) – Anthropic’s Claude Code
+- [`codex`](https://github.com/openai/codex) – OpenAI’s Codex
+- [`copilot`](https://github.com/github/copilot-cli) – GitHub Copilot
+- [`crush`](https://github.com/charmbracelet/crush) – Crush
+- [`cursor`](https://cursor.com/cli) – Cursor CLI
 - [`gemini`](https://github.com/google-gemini/gemini-cli) – Google’s Gemini CLI.
 - [`grok`](https://github.com/superagent-ai/grok-cli) – xAI’s Grok CLI.
-- [`opencode`](https://github.com/sst/opencode) – OpenCode’s CLI for local workflows.
-- [`qwen`](https://github.com/QwenLM/qwen-code) – Alibaba’s Qwen Code CLI.
+- [`opencode`](https://github.com/sst/opencode) – OpenCode
+- [`qwen`](https://github.com/QwenLM/qwen-code) – Alibaba’s Qwen Code
+
+## 🚀 Commands
+
+Sidekick provides a `:Sidekick` command that allows you to interact with the plugin
+from the command line. The command is a thin wrapper around the Lua API, so you
+can use it to do anything that the Lua API can do.
+
+### Command Structure
+
+The command structure is simple:
+
+```
+:Sidekick <module> <command> [args]
+```
+
+- `<module>`: The name of the module you want to use (e.g., `nes`, `cli`).
+- `<command>`: The name of the command you want to execute.
+- `[args]`: Optional arguments for the command. The arguments are parsed as a Lua
+  table.
+
+For example, to show the CLI window for the `claude` tool, you can use the
+following command:
+
+```
+:Sidekick cli show name=claude
+```
+
+This is equivalent to the following Lua code:
+
+```lua
+require("sidekick.cli").show({ name = "claude" })
+```
+
+### Available Commands
+
+Here's a list of the available commands:
+
+**NES (`nes`)**
+
+- `enable`: Enable Next Edit Suggestions.
+- `disable`: Disable Next Edit Suggestions.
+- `toggle`: Toggle Next Edit Suggestions.
+- `update`: Trigger a new suggestion.
+- `clear`: Clear the current suggestion.
+
+**CLI (`cli`)**
+
+- `show`: Show the CLI window.
+- `toggle`: Toggle the CLI window.
+- `hide`: Hide the CLI window.
+- `close`: Close the CLI window.
+- `focus`: Focus the CLI window.
+- `select`: Select a CLI tool to open.
+- `send`: Send a message to the current CLI tool.
+- `prompt`: Select a prompt to send to the current CLI tool.
+
+### Examples
+
+Here are some examples of how to use the `:Sidekick` command:
+
+- Toggle the CLI window:
+
+  ```
+  :Sidekick cli toggle
+  ```
+
+  Lua equivalent:
+
+  ```lua
+  require("sidekick.cli").toggle()
+  ```
+
+- Send the visual selection to the current CLI tool:
+
+  ```
+  :'<,'>Sidekick cli send msg="{selection}"
+  ```
+
+  Lua equivalent:
+
+  ```lua
+  require("sidekick.cli").send({ msg = "{selection}" })
+  ```
+
+- Show the CLI window for the `grok` tool and focus it:
+
+  ```
+  :Sidekick cli show name=grok focus=true
+  ```
+
+  Lua equivalent:
+
+  ```lua
+  require("sidekick.cli").show({ name = "grok", focus = true })
+  ```
 
 ## 📟 Statusline Integration
 
