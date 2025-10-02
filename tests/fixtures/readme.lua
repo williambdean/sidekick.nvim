@@ -122,6 +122,8 @@ local blink = {
 local lualine = {
   "nvim-lualine/lualine.nvim",
   opts = function(_, opts)
+    opts.sections = opts.sections or {}
+    opts.sections.lualine_c = opts.sections.lualine_c or {}
     table.insert(opts.sections.lualine_c, {
       function()
         return " "
