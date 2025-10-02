@@ -40,6 +40,7 @@ without leaving your editor.
 - A working `lsp/copilot.lua` configuration.
   - **TIP:** Included in [nvim-lspconfig](https://github.com/neovim/nvim-lspconfig)
 - [snacks.nvim](https://github.com/folke/snacks.nvim) for better prompt/tool selection **_(optional)_**
+- [nvim-treesitter-textobjects](https://github.com/nvim-treesitter/nvim-treesitter-textobjects) **_(`main` branch)_** for `{function}` and `{class}` context variables **_(optional)_**
 - AI cli tools, such as Codex, Claude, Copilot, Gemini, … **_(optional)_**
   see the [🤖 AI CLI Integration](#-ai-cli-integration) section for details.
 
@@ -261,7 +262,7 @@ local defaults = {
     watch = true, -- notify Neovim of file changes done by AI CLI tools
     ---@class sidekick.win.Opts
     win = {
-      --- The is ran when a new terminal is created, before starting it.
+      --- This is run when a new terminal is created, before starting it.
       --- Here you can change window options `terminal.opts`.
       ---@param terminal sidekick.cli.Terminal
       config = function(terminal) end,
@@ -284,7 +285,7 @@ local defaults = {
       --- default mode is `t`
       ---@type table<string, sidekick.cli.Keymap|false>
       keys = {
-        -- -- diabled the soptinsert keymaps since it interfers with some tools
+        -- -- disabled the stopinsert keymaps since it interferes with some tools
         -- -- Use Neovim's default `<c-\><c-n>` instead
         -- stopinsert = { "<c-o>", "stopinsert", mode = "t" }, -- enter normal mode
         hide_n = { "q", "hide", mode = "n" }, -- hide the terminal window in normal mode
@@ -352,6 +353,8 @@ local defaults = {
       file            = "{file}",
       position        = "{position}",
       selection       = "{selection}",
+      ["function"]    = "{function}",
+      class           = "{class}",
     },
   },
   copilot = {
@@ -450,9 +453,12 @@ current file, selection, diagnostics, and more.
 - `{buffers}`: A list of all open buffers.
 - `{file}`: The current file path.
 - `{position}`: The cursor position in the current file.
+- `{line}`: The current line.
 - `{selection}`: The visual selection.
 - `{diagnostics}`: The diagnostics for the current buffer.
 - `{diagnostics_all}`: All diagnostics in the workspace.
+- `{function}`: The function at cursor (Tree-sitter) - returns location like `function foo @file:10:5`.
+- `{class}`: The class/struct at cursor (Tree-sitter) - returns location.
 - `{this}`: A special context variable. If the current buffer is a file, it resolves to `{position}`. Otherwise, it resolves to the literal string "this" and appends the current `{selection}` to the prompt.
 
 ### CLI Keymaps
@@ -497,19 +503,19 @@ The default keymaps are:
 
 Sidekick preconfigures popular AI CLIs. Run `:checkhealth sidekick` to see which ones are installed.
 
-| Tool | Description | Installation |
-|------|-------------|--------------|
-| [`aider`](https://github.com/Aider-AI/aider) | AI pair programmer | `pip install aider-chat` or `pipx install aider-chat` |
-| [`amazon_q`](https://github.com/aws/amazon-q-developer-cli) | Amazon Q Developer | [Install guide](https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/command-line-getting-started-installing.html) |
-| [`claude`](https://github.com/anthropics/claude-code) | Claude Code CLI | `npm install -g @anthropic-ai/claude-code` |
-| [`codex`](https://github.com/openai/codex) | OpenAI Codex CLI | See [OpenAI docs](https://github.com/openai/codex) |
-| [`copilot`](https://github.com/github/copilot-cli) | GitHub Copilot CLI | `npm install -g @githubnext/github-copilot-cli` |
-| [`crush`](https://github.com/charmbracelet/crush) | Charm's AI assistant | See [installation](https://github.com/charmbracelet/crush) |
-| [`cursor`](https://cursor.com/cli) | Cursor CLI agent | See [Cursor docs](https://cursor.com/cli) |
-| [`gemini`](https://github.com/google-gemini/gemini-cli) | Google Gemini CLI | See [repo](https://github.com/google-gemini/gemini-cli) |
-| [`grok`](https://github.com/superagent-ai/grok-cli) | xAI Grok CLI | See [repo](https://github.com/superagent-ai/grok-cli) |
-| [`opencode`](https://github.com/sst/opencode) | OpenCode CLI | `npm install -g opencode` |
-| [`qwen`](https://github.com/QwenLM/qwen-code) | Alibaba Qwen Code | See [repo](https://github.com/QwenLM/qwen-code) |
+| Tool                                                        | Description          | Installation                                                                                                           |
+| ----------------------------------------------------------- | -------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| [`aider`](https://github.com/Aider-AI/aider)                | AI pair programmer   | `pip install aider-chat` or `pipx install aider-chat`                                                                  |
+| [`amazon_q`](https://github.com/aws/amazon-q-developer-cli) | Amazon Q Developer   | [Install guide](https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/command-line-getting-started-installing.html) |
+| [`claude`](https://github.com/anthropics/claude-code)       | Claude Code CLI      | `npm install -g @anthropic-ai/claude-code`                                                                             |
+| [`codex`](https://github.com/openai/codex)                  | OpenAI Codex CLI     | See [OpenAI docs](https://github.com/openai/codex)                                                                     |
+| [`copilot`](https://github.com/github/copilot-cli)          | GitHub Copilot CLI   | `npm install -g @githubnext/github-copilot-cli`                                                                        |
+| [`crush`](https://github.com/charmbracelet/crush)           | Charm's AI assistant | See [installation](https://github.com/charmbracelet/crush)                                                             |
+| [`cursor`](https://cursor.com/cli)                          | Cursor CLI agent     | See [Cursor docs](https://cursor.com/cli)                                                                              |
+| [`gemini`](https://github.com/google-gemini/gemini-cli)     | Google Gemini CLI    | See [repo](https://github.com/google-gemini/gemini-cli)                                                                |
+| [`grok`](https://github.com/superagent-ai/grok-cli)         | xAI Grok CLI         | See [repo](https://github.com/superagent-ai/grok-cli)                                                                  |
+| [`opencode`](https://github.com/sst/opencode)               | OpenCode CLI         | `npm install -g opencode`                                                                                              |
+| [`qwen`](https://github.com/QwenLM/qwen-code)               | Alibaba Qwen Code    | See [repo](https://github.com/QwenLM/qwen-code)                                                                        |
 
 > [!TIP]
 > After installing tools, restart Neovim or run `:Sidekick cli select` to see them available.
@@ -692,6 +698,7 @@ opts = {
 ### How is this different from copilot.lua or copilot.vim?
 
 `copilot.lua` and `copilot.vim` provide **inline completions** (suggestions as you type). `sidekick.nvim` adds:
+
 - **Next Edit Suggestions (NES)**: Multi-line refactorings and context-aware edits across your file
 - **AI CLI Integration**: Built-in terminal for Claude, Gemini, and other AI tools
 
@@ -739,6 +746,7 @@ opts = {
 ### Does sidekick.nvim replace Copilot's inline suggestions?
 
 No! NES complements inline suggestions. They serve different purposes:
+
 - **Inline completions**: Quick, as-you-type suggestions (use copilot.lua or native `vim.lsp.inline_completion`)
 - **NES**: Larger refactorings and multi-line changes after you pause
 

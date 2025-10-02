@@ -129,6 +129,8 @@ local defaults = {
       file            = "{file}",
       position        = "{position}",
       selection       = "{selection}",
+      ["function"]    = "{function}",
+      class           = "{class}",
     },
   },
   copilot = {

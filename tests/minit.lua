@@ -24,5 +24,16 @@ require("lazy.minit").setup({
       dir = vim.uv.cwd(),
       opts = {},
     },
+    { "nvim-treesitter/nvim-treesitter-textobjects", branch = "main" },
+    {
+      "nvim-treesitter/nvim-treesitter",
+      branch = "main",
+      build = ":TSUpdate",
+      config = function()
+        local TS = require("nvim-treesitter")
+        TS.setup({})
+        TS.install({ "python", "rust", "javascript", "typescript", "go", "lua" }, { summary = true }):wait()
+      end,
+    },
   },
 })

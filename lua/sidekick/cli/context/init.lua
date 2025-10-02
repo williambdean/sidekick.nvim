@@ -2,6 +2,7 @@ local Config = require("sidekick.config")
 local Diag = require("sidekick.cli.context.diagnostics")
 local Loc = require("sidekick.cli.context.location")
 local Text = require("sidekick.text")
+local TextObject = require("sidekick.cli.context.textobject")
 local Util = require("sidekick.util")
 
 local M = {}
@@ -42,6 +43,13 @@ M.context = {
   end,
   selection = function(ctx)
     return require("sidekick.cli.context.selection").get(ctx)
+  end,
+  -- Treesitter textobject contexts
+  ["function"] = function(ctx)
+    return TextObject.get(ctx, { type = "function", kind = "position" })
+  end,
+  class = function(ctx)
+    return TextObject.get(ctx, { type = "class", kind = "position" })
   end,
 }
 
