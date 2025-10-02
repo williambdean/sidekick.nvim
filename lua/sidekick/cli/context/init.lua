@@ -17,8 +17,9 @@ M.context = {
   line = function(ctx)
     return Loc.is_file(ctx.buf) and Loc.get(ctx, { kind = "line" })
   end,
-  this = function(ctx)
-    return Loc.is_file(ctx.buf) and Loc.get(ctx, { kind = "position" }) or ctx.range and "this"
+  this = function()
+    -- this is not actually used.
+    -- `{this}` is special, see the C:render function for more details
   end,
   buffers = function(ctx)
     local ret = {} ---@type sidekick.Text[]
