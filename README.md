@@ -428,6 +428,8 @@ Sidekick comes with a set of predefined prompts that you can use with your AI to
 You can also use context variables in your prompts to include information about the
 current file, selection, diagnostics, and more.
 
+<img width="1431" height="723" alt="image" src="https://github.com/user-attachments/assets/652867ec-f34e-4036-9b0b-8a4817cc8722" />
+
 **Available Prompts:**
 
 - **changes**: `Can you review my changes?`
