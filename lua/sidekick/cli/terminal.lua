@@ -213,6 +213,12 @@ function M:start()
     end,
   })
 
+  local norm_cmd = vim.deepcopy(cmd.cmd)
+  if vim.fn.has("win32") == 1 then
+    local cmd1 = vim.fn.exepath(norm_cmd[1])
+    norm_cmd[1] = cmd1 == "" and norm_cmd[1] or cmd1
+  end
+
   vim.api.nvim_win_call(self.win, function()
     local env = vim.tbl_extend("force", {}, vim.uv.os_environ(), self.tool.env or {}, cmd.env or {}, {
       NVIM = vim.v.servername,
@@ -228,7 +234,7 @@ function M:start()
         env[k] = nil
       end
     end
-    self.job = vim.fn.jobstart(cmd.cmd, {
+    self.job = vim.fn.jobstart(norm_cmd, {
       cwd = self.session.cwd,
       term = true,
       clear_env = true,
@@ -237,7 +243,7 @@ function M:start()
   end)
 
   if self.job <= 0 then
-    local display = table.concat(cmd.cmd, " ")
+    local display = table.concat(norm_cmd, " ")
     Util.error("Failed to run `" .. display .. "`")
     self:close()
     return
