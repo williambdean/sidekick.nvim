@@ -37,11 +37,9 @@ end
 ---@param opts? {cwd?:string}
 function M.new(tool, opts)
   local cwd = M.cwd(opts)
-  local cwd_id = vim.fn.fnamemodify(cwd, ":p:~")
-  cwd_id = cwd_id:gsub("[^%w%-%_~ ]+", "_"):gsub("^_+", ""):gsub("_+$", "")
   ---@type sidekick.cli.Session
   local ret = {
-    id = ("sidekick " .. tool.name .. " " .. cwd_id),
+    id = ("%s %s"):format(tool.name, vim.fn.sha256(cwd):sub(1, 16 - #tool.name)),
     cwd = cwd,
     tool = tool.name,
   }
@@ -50,7 +48,7 @@ end
 
 ---@param opts? {cwd?:string}
 function M.cwd(opts)
-  return vim.fs.normalize(opts and opts.cwd or vim.fn.getcwd(0))
+  return vim.fs.normalize(vim.fn.fnamemodify(opts and opts.cwd or vim.fn.getcwd(0), ":p"))
 end
 
 return M

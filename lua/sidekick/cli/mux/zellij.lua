@@ -55,15 +55,7 @@ function M:cmd()
 end
 
 function M._sessions()
-  local ret = vim.system({ "zellij", "list-sessions", "-ns" }, { text = true }):wait()
-  if ret.code ~= 0 then
-    return {}
-  end
-  local sessions = {} ---@type string[]
-  for _, line in ipairs(vim.split(ret.stdout, "\n", { plain = true })) do
-    sessions[#sessions + 1] = line:match("^(sidekick .+)$")
-  end
-  return sessions
+  return Util.exec({ "zellij", "list-sessions", "-ns" })
 end
 
 return M

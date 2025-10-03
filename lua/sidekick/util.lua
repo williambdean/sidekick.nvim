@@ -138,4 +138,19 @@ function M.deprecate(deprecated, replacement)
   M.warn(("`%s` is deprecated.\nPlease use `%s` instead."):format(deprecated, replacement))
 end
 
+---@param cmd string[]
+---@param opts? vim.SystemOpts|{notify?:boolean}
+function M.exec(cmd, opts)
+  opts = opts or {}
+  opts.text = true
+  local result = vim.system(cmd, opts):wait()
+  if result.code ~= 0 or not result.stdout then
+    if opts.notify ~= false then
+      M.error(("Command failed: `%s`\n%s"):format(table.concat(cmd, " "), result.stderr or ""))
+    end
+    return nil
+  end
+  return vim.split(result.stdout, "\n", { plain = true, trimempty = true })
+end
+
 return M
