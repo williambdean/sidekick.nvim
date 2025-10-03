@@ -213,10 +213,14 @@ function M:start()
     end,
   })
 
-  local norm_cmd = vim.deepcopy(cmd.cmd)
+  local norm_cmd = vim.deepcopy(cmd.cmd) ---@type string|string[]
   if vim.fn.has("win32") == 1 then
     local cmd1 = vim.fn.exepath(norm_cmd[1])
-    norm_cmd[1] = cmd1 == "" and norm_cmd[1] or cmd1
+    if cmd1 == "" or not cmd1:find("%.exe") then
+      norm_cmd = table.concat(cmd.cmd, " ")
+    else
+      norm_cmd[1] = cmd1
+    end
   end
 
   vim.api.nvim_win_call(self.win, function()
@@ -243,7 +247,7 @@ function M:start()
   end)
 
   if self.job <= 0 then
-    local display = table.concat(norm_cmd, " ")
+    local display = table.concat(cmd.cmd, " ")
     Util.error("Failed to run `" .. display .. "`")
     self:close()
     return
