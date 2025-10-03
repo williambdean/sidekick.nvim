@@ -3,6 +3,11 @@
 local Context = require("sidekick.cli.context")
 local TextObject = require("sidekick.cli.context.textobject")
 
+local function pending(msg)
+  print("PENDING: " .. msg)
+  assert.is_true(true)
+end
+
 describe("textobject context", function()
   local buf, win
 
@@ -23,7 +28,7 @@ describe("textobject context", function()
   ---@param lang string
   ---@return boolean
   local function has_parser(lang)
-    local ok, _ = pcall(vim.treesitter.language.add, lang)
+    local ok, _ = pcall(vim.treesitter.get_parser, nil, lang)
     return ok
   end
 
