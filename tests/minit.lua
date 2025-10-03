@@ -19,10 +19,6 @@ end
 
 -- Setup lazy.nvim
 require("lazy.minit").setup({
-  performance = {
-    -- reset_pack_pacth = false,
-    rtp = { reset = false },
-  },
   spec = {
     {
       dir = vim.uv.cwd(),
@@ -41,3 +37,6 @@ require("lazy.minit").setup({
     },
   },
 })
+
+-- TODO: check why this is needed
+vim.opt.rtp:append(vim.fn.stdpath("data") .. "/site")
