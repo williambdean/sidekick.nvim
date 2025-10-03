@@ -62,6 +62,15 @@ local M = {}
 ---@field [2] string|sidekick.cli.Action
 ---@field mode? string|string[]
 
+---@param opts? sidekick.cli.Show|string
+local function show_opts(opts)
+  opts = type(opts) == "string" and { name = opts } or opts or {}
+  ---@cast opts sidekick.cli.Show
+  opts.filter = opts.filter or {}
+  opts.filter.name = opts.name or opts.filter.name or nil
+  return opts
+end
+
 ---@param opts? sidekick.cli.Select
 function M.select(opts)
   opts = opts or {}
@@ -276,9 +285,7 @@ end
 ---@param opts? sidekick.cli.Show
 ---@overload fun(name: string)
 function M.show(opts)
-  opts = type(opts) == "string" and { name = opts } or opts or {}
-  local filter = opts.filter or {}
-  filter.name = opts.name or filter.name or nil
+  opts = show_opts(opts)
   M.with(function(t)
     t:show()
     if t:is_open() then
@@ -291,33 +298,33 @@ function M.show(opts)
         end)
       end
     end
-  end, { filter = filter, create = true })
+  end, { filter = opts.filter, create = true })
 end
 
 ---@param opts? sidekick.cli.Show
 ---@overload fun(name: string)
 function M.toggle(opts)
-  opts = type(opts) == "string" and { name = opts } or opts or {}
+  opts = show_opts(opts)
   M.with(function(t)
     t:toggle()
     if t:is_open() and opts.focus ~= false then
       t:focus()
     end
-  end, { filter = { name = opts.name }, create = true })
+  end, { filter = opts.filter, create = true })
 end
 
 --- Toggle focus of the terminal window if it is already open
 ---@param opts? sidekick.cli.Show
 ---@overload fun(name: string)
 function M.focus(opts)
-  opts = type(opts) == "string" and { name = opts } or opts or {}
+  opts = show_opts(opts)
   M.with(function(t)
     if t:is_focused() then
       t:blur()
     else
       t:focus()
     end
-  end, { filter = { name = opts.name }, create = true })
+  end, { filter = opts.filter, create = true })
 end
 
 ---@param opts? sidekick.cli.Hide
@@ -347,6 +354,7 @@ end
 ---@overload fun(msg:string)
 function M.send(opts)
   opts = opts or {}
+  opts = type(opts) == "string" and { msg = opts } or opts
 
   if not opts.msg and not opts.prompt and Util.visual_mode() then
     opts.msg = "{selection}"
