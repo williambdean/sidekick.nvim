@@ -13,6 +13,13 @@ function M:cmd()
   end
 
   local cmd = { "tmux", "new", "-A", "-s", self.session.id }
+  for key, value in pairs(self.tool.env or {}) do
+    if value == false then
+      vim.list_extend(cmd, { "-u", key }) -- unset
+    else
+      vim.list_extend(cmd, { "-e", ("%s=%s"):format(key, tostring(value)) })
+    end
+  end
   vim.list_extend(cmd, self.tool.cmd)
   vim.list_extend(cmd, { ";", "set-option", "status", "off" })
   vim.list_extend(cmd, { ";", "set-option", "detach-on-destroy", "on" })
