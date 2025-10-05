@@ -662,7 +662,7 @@ in your statusline.
 2. Check Copilot is signed in: `:LspCopilotSignIn`
 3. Verify the LSP is attached: `:lua vim.print(require("sidekick.config").get_client())`
 4. Try manually triggering: `:Sidekick nes update`
-5. Check if NES is enabled: `:lua vim.print(require("sidekick.config").nes.enabled)`
+5. Check if NES is enabled: `:lua vim.print(require("sidekick.config").nes.enabled())`
 
 ### CLI tools not starting?
 
